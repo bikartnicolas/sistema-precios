@@ -6,9 +6,11 @@
   "type": "commonjs",
   "scripts": {
     "descargar": "node descargar-precios.js",
-    "calibrar": "playwright codegen https://magio.chesserp.com/AR526/#/ventas/gestion/precios-de-venta"
+    "calibrar": "playwright codegen https://magio.chesserp.com/AR526/#/ventas/gestion/precios-de-venta",
+    "datos": "node generar-datos.js"
   },
   "dependencies": {
-    "playwright": "^1.47.0"
+    "playwright": "^1.47.0",
+    "xlsx": "^0.18.5"
   }
 }

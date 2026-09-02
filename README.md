@@ -29,31 +29,32 @@ Lista general → Excel**.
 
 ## 1. La web de etiquetas
 
-Abrí `web/index.html` con doble clic. **Importante: mantené la carpeta `lib` al lado
-del archivo** — ahí está la librería que lee los Excel, para que funcione sin internet.
+Abrí `web/index.html` con doble clic. **Importante: mantené las carpetas `lib` y los
+archivos `logo.svg` / `datos.js` al lado del index** — ahí está la librería que lee los
+Excel (para que funcione sin internet) y los datos que deja el agente.
 
-### Uso
+### El recorrido
 
-1. **Importar** — subís el Excel de Chess. Las columnas E, F, S y AA vienen
-   preseleccionadas; verificás con la vista previa y confirmás.
-2. **Productos y filtros** — el listado con todo. Filtrás por:
-   - búsqueda de texto (descripción o código)
-   - **marca** (checkboxes con el conteo de productos de cada una)
-   - rango de precio (desde / hasta)
-   - **lista de códigos de Chess** pegada (uno por línea)
-   - solo los que cambiaron de precio
-
-   Marcás los que querés con los checkboxes y apretás **Generar etiquetas**.
-3. **Cambios de precio** — qué subió, qué bajó y qué es nuevo contra la última lista
-   guardada. Botón para seleccionar todos los cambiados de una.
-4. **Etiquetas** — la hoja lista. Ajustás columnas, alto y tamaño de letra, e imprimís.
+1. **Inicio** — si el agente ya descargó la lista, aparece *"Lista descargada de Chess ·
+   N productos"* y seguís con un click. Si no, arrastrás el Excel o lo elegís a mano
+   (ahí verificás las columnas E, F, S y AA, que vienen preseleccionadas).
+2. **Dos caminos** — *Imprimir etiquetas* o *Ver cambios de precio*.
+3. **Marcas** — todas las marcas del Excel en cuadros, con cuántos productos tiene cada
+   una y cuántos cambiaron de precio. Por marca:
+   - **Toda la marca** — la agrega completa de una.
+   - **Elegir productos** — abrís la lista y marcás de a uno.
+4. **¿Seguir agregando?** — después de cada agregado el sistema te pregunta si sumás
+   otra marca o pasás a imprimir, y te muestra el total acumulado.
+5. **Etiquetas** — la hoja lista. Ajustás columnas, alto, tamaños, y si querés el código
+   y el logo. Imprimís en A4 y cortás por las líneas de puntos.
 
 ### Reglas automáticas
 
-- Los artículos con **precio $0 se excluyen solos** (checkbox en el panel de filtros
-  si alguna vez los necesitás).
-- Las **exclusiones permanentes** (códigos o palabras que nunca van a góndola) se
-  cargan en la pestaña 1 y quedan guardadas en el navegador.
+- Los artículos con **precio $0 nunca se imprimen**: no tienen precio de lista cargado
+  en Chess y una etiqueta en $0 en la góndola es un error de cara al cliente.
+- El **logo Tumalac** va en el encabezado y en cada etiqueta. Está reconstruido en
+  `web/logo.svg`; si dejás el archivo original como `web/logo.png`, el sistema lo usa
+  automáticamente en su lugar.
 
 ### Cómo detecta los cambios de precio
 
@@ -92,7 +93,16 @@ El script reproduce estos clicks (definidos en `config.json` → `pasosExportaci
 3. **Lista 1 - Lista general**
 4. **Excel** (dispara la descarga)
 
-El Excel queda en `descargas/` con la fecha en el nombre.
+El Excel queda en `descargas/` con la fecha en el nombre, **y además se carga solo en el
+sistema**: el script lo convierte a `web/datos.js`, así al abrir `web/index.html` los
+productos ya están ahí sin subir nada.
+
+Si bajaste un Excel a mano y lo querés cargar igual:
+
+```bash
+node generar-datos.js ../descargas/2026-09-02_precios.xlsx
+node generar-datos.js        # sin argumento toma el más reciente de descargas/
+```
 
 ### Si falla el login o algún click
 

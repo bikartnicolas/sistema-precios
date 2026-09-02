@@ -4,3 +4,4 @@ scripts/config.json
 descargas/
 *.log
 .DS_Store
+web/datos.js

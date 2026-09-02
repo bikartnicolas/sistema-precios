@@ -14,6 +14,7 @@
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
+const { escribirDatosWeb } = require('./lib-datos');
 
 function loadEnv() {
   const envPath = path.join(__dirname, '.env');
@@ -95,9 +96,12 @@ async function main() {
     const suggested = download.suggestedFilename() || `precios-${stamp}.xlsx`;
     const destPath = path.join(downloadDir, `${stamp}_${suggested}`);
     await download.saveAs(destPath);
-
     console.log('Descarga guardada en:', destPath);
-    console.log('Abri web/index.html y subi ese archivo en la pestaña 1 (Importar).');
+
+    // Deja los datos listos dentro del sistema: al abrir web/index.html ya aparecen,
+    // sin tener que subir el Excel a mano.
+    const { cantidad } = escribirDatosWeb(destPath, config.columnas);
+    console.log(`web/datos.js actualizado con ${cantidad} productos. Abri web/index.html y dale Continuar.`);
   } catch (err) {
     console.error('Algo fallo. Si es la primera vez, corre "npm run calibrar" para obtener los selectores reales de tu Chess y actualizalos en config.json.');
     console.error(err.message);
