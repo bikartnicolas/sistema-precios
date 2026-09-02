@@ -1,0 +1,27 @@
+{
+  "baseUrl": "https://magio.chesserp.com/AR526/",
+  "precioVentaUrl": "https://magio.chesserp.com/AR526/#/ventas/gestion/precios-de-venta",
+  "downloadDir": "../descargas",
+
+  "_comentario_selectores": "Estos selectores son un punto de partida generico basado en lo que describiste (Exportar lista de precios > Vista completa > Lista 1 - Lista general > Excel). Si algun texto no coincide exacto con lo que ves en pantalla, corre 'npm run calibrar', repeti los clicks a mano y copia el selector real que te muestra Playwright Codegen, reemplazando el paso correspondiente en 'pasosExportacion'.",
+
+  "selectors": {
+    "userInput": "input[type='text'], input[name='usuario'], input[name='username']",
+    "passInput": "input[type='password']",
+    "loginButton": "button[type='submit']"
+  },
+
+  "pasosExportacion": [
+    { "accion": "click", "selector": "text=Exportar lista de precios", "descripcion": "Abrir el panel de exportación" },
+    { "accion": "click", "selector": "text=Vista completa", "descripcion": "Elegir 'Vista completa'" },
+    { "accion": "click", "selector": "text=Lista 1 - Lista general", "descripcion": "Seleccionar 'Lista 1 - Lista general' (si el texto exacto difiere, ajustar acá)" },
+    { "accion": "click", "selector": "text=Excel", "descripcion": "Disparar la descarga del Excel", "esperaDescarga": true }
+  ],
+
+  "timeouts": {
+    "loginMs": 20000,
+    "pageLoadMs": 30000,
+    "downloadMs": 30000,
+    "entrePasosMs": 800
+  }
+}

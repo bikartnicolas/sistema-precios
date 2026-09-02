@@ -1,0 +1,14 @@
+{
+  "name": "chess-precios-descarga",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Descarga automatica del Excel de precios de venta desde Chess ERP",
+  "type": "commonjs",
+  "scripts": {
+    "descargar": "node descargar-precios.js",
+    "calibrar": "playwright codegen https://magio.chesserp.com/AR526/#/ventas/gestion/precios-de-venta"
+  },
+  "dependencies": {
+    "playwright": "^1.47.0"
+  }
+}

@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Etiquetas de precios - Góndola</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#f4f5f7; --panel:#ffffff; --ink:#1c1f24; --muted:#6b7280;
+    --accent:#7a1f2b; --line:#d7dadf; --ok:#1a7f37; --changed:#b45309;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  header{padding:16px 24px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  header h1{font-size:18px;margin:0}
+  .tabs{display:flex;gap:8px;margin-left:auto}
+  .tab{padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:14px}
+  .tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  main{padding:20px 24px 80px;max-width:1200px;margin:0 auto}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:20px}
+  .panel h2{margin-top:0;font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  button{cursor:pointer;border:none;border-radius:8px;padding:10px 16px;font-size:14px;font-weight:600}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-secondary{background:#eef0f3;color:var(--ink)}
+  .btn-primary:disabled,.btn-secondary:disabled{opacity:.45;cursor:not-allowed}
+  input[type=file]{padding:8px;border:1px dashed var(--line);border-radius:8px;background:#fafbfc}
+  select,input[type=number],input[type=text]{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase}
+  tr.changed td{background:#fff7ed}
+  tr.new td{background:#eff8f0}
+  .price-old{color:var(--muted);text-decoration:line-through;margin-right:6px}
+  .price-new{color:var(--changed);font-weight:700}
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+  .badge.changed{background:#fef3c7;color:var(--changed)}
+  .badge.new{background:#dcfce7;color:var(--ok)}
+  .muted{color:var(--muted);font-size:13px}
+  .mapping-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+  .mapping-grid label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
+  .preview-table-wrap{overflow:auto;max-height:220px;border:1px solid var(--line);border-radius:8px;margin-top:12px}
+
+  /* ---------- Etiquetas ---------- */
+  #labelsSheet{background:#fff}
+  .labels-grid{
+    display:grid;
+    grid-template-columns:repeat(var(--cols,3), 1fr);
+    gap:0;
+  }
+  .label{
+    border:1px dashed #b9bcc2;
+    padding:10px 8px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;
+    height:var(--label-h,150px);
+    overflow:hidden;
+  }
+  .label .desc{
+    color:var(--accent);
+    font-size:13px;
+    font-weight:600;
+    line-height:1.25;
+    margin-bottom:6px;
+    max-width:100%;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .label .price{
+    font-size:40px;font-weight:800;letter-spacing:-1px;line-height:1;color:#111;
+  }
+  .label .price sup{font-size:20px;font-weight:800;top:-0.9em}
+  .label .code{margin-top:6px;font-size:11px;color:#111;letter-spacing:.03em}
+
+  @media print{
+    header,.no-print{display:none!important}
+    body{background:#fff}
+    main{padding:0;max-width:none}
+    .panel{border:none;padding:0;margin:0;box-shadow:none}
+    .label{border:1px dashed #999}
+    @page{size:A4;margin:10mm}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🏷️ Etiquetas de precios</h1>
+  <div class="tabs no-print">
+    <button class="tab active" data-tab="importar">1. Importar</button>
+    <button class="tab" data-tab="cambios">2. Cambios de precio</button>
+    <button class="tab" data-tab="etiquetas">3. Etiquetas</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===================== TAB IMPORTAR ===================== -->
+  <section id="tab-importar" class="tab-content">
+    <div class="panel">
+      <h2>Importar Excel de Chess</h2>
+      <p class="muted">Subí el Excel exportado desde <em>Ventas &gt; Gestión &gt; Precios de venta</em>. El sistema intenta detectar solo las columnas Código, Descripción y Precio.</p>
+      <div class="row">
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" />
+        <span id="fileStatus" class="muted"></span>
+      </div>
+
+      <div id="mappingBox" style="display:none;margin-top:16px">
+        <p class="muted">No pude detectar todas las columnas solo. Elegí manualmente cuál es cuál:</p>
+        <div class="mapping-grid">
+          <label>Columna Código
+            <select id="mapCodigo"></select>
+          </label>
+          <label>Columna Descripción
+            <select id="mapDescripcion"></select>
+          </label>
+          <label>Columna Precio
+            <select id="mapPrecio"></select>
+          </label>
+        </div>
+        <div class="preview-table-wrap">
+          <table id="previewTable"></table>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn-primary" id="confirmMapping">Confirmar columnas</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="loadedSummary" style="display:none">
+      <h2>Lista cargada</h2>
+      <p id="summaryText" class="muted"></p>
+      <div class="row">
+        <button class="btn-secondary" id="btnGoLabels">Ir a etiquetas →</button>
+        <button class="btn-secondary" id="btnGoChanges">Ver cambios de precio →</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Lista base guardada (para comparar la próxima vez)</h2>
+      <p id="baselineInfo" class="muted">Todavía no guardaste ninguna lista base.</p>
+      <div class="row">
+        <button class="btn-secondary" id="btnClearBaseline">Borrar lista base</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TAB CAMBIOS ===================== -->
+  <section id="tab-cambios" class="tab-content" style="display:none">
+    <div class="panel">
+      <h2>Comparación contra la última lista guardada</h2>
+      <p id="changesSummary" class="muted">Importá un Excel nuevo en la pestaña 1 para comparar.</p>
+      <div class="row no-print" style="margin-bottom:12px">
+        <button class="btn-secondary" id="btnSelectAllChanged">Seleccionar todos los cambiados</button>
+        <button class="btn-secondary" id="btnSelectNone">Ninguno</button>
+        <button class="btn-primary" id="btnPrintChanged" disabled>Imprimir etiquetas seleccionadas</button>
+        <button class="btn-secondary" id="btnSaveBaseline">Guardar esta lista como base actual</button>
+      </div>
+      <div id="changesTableWrap"></div>
+    </div>
+  </section>
+
+  <!-- ===================== TAB ETIQUETAS ===================== -->
+  <section id="tab-etiquetas" class="tab-content" style="display:none">
+    <div class="panel no-print">
+      <h2>Opciones de impresión</h2>
+      <div class="row">
+        <label>Columnas por hoja
+          <select id="colsSelect">
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+          </select>
+        </label>
+        <label>Alto de etiqueta (mm)
+          <input type="number" id="labelHeight" value="40" min="20" max="100" style="width:80px">
+        </label>
+        <input type="text" id="filterText" placeholder="Filtrar por descripción o código..." style="flex:1;min-width:200px">
+        <button class="btn-primary" id="btnPrintAll">Imprimir todas</button>
+      </div>
+    </div>
+    <div class="panel" id="labelsSheet">
+      <div class="labels-grid" id="labelsGrid" style="--cols:3;--label-h:151px"></div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const STORAGE_KEY = 'preciosBaseline_v1';
+let currentList = [];      // [{codigo, descripcion, precio}]
+let rawRows = [];
+let headers = [];
+let pendingMapping = null;
+let comparison = null;     // {changed:[], added:[]}
+
+// ---------- Tabs ----------
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
+    document.getElementById('tab-'+t.dataset.tab).style.display='block';
+  });
+});
+document.getElementById('btnGoLabels').addEventListener('click', ()=>document.querySelector('.tab[data-tab=etiquetas]').click());
+document.getElementById('btnGoChanges').addEventListener('click', ()=>document.querySelector('.tab[data-tab=cambios]').click());
+
+// ---------- Helpers ----------
+function norm(s){ return (s||'').toString().trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+
+function guessColumn(headers, keywords){
+  for(const h of headers){
+    const n = norm(h);
+    if(keywords.some(k=>n.includes(k))) return h;
+  }
+  return null;
+}
+
+function parsePrice(v){
+  if(typeof v === 'number') return v;
+  let s = (v||'').toString().trim();
+  s = s.replace(/[^\d,.\-]/g,'');
+  if(s.includes(',') && s.includes('.')){
+    // formato 1.234,56
+    s = s.replace(/\./g,'').replace(',', '.');
+  } else if(s.includes(',')){
+    s = s.replace(',', '.');
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function formatPrice(n){
+  const fixed = n.toFixed(2);
+  const [intPart, decPart] = fixed.split('.');
+  const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `${intFormatted},<sup>${decPart}</sup>`;
+}
+
+// ---------- Import file ----------
+document.getElementById('fileInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  document.getElementById('fileStatus').textContent = 'Leyendo ' + file.name + '...';
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, {type:'array'});
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  const json = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
+  if(json.length < 2){
+    document.getElementById('fileStatus').textContent = 'El archivo no tiene datos.';
+    return;
+  }
+  headers = json[0].map(h=>h?.toString() || '');
+  rawRows = json.slice(1).filter(r=>r.some(c=>c!==''));
+
+  const codigoCol = guessColumn(headers, ['codigo','cod.','sku','articulo cod']);
+  const descCol = guessColumn(headers, ['descrip','producto','articulo','detalle']);
+  const precioCol = guessColumn(headers, ['precio','p. venta','p.venta','importe']);
+
+  if(codigoCol && descCol && precioCol){
+    applyMapping(codigoCol, descCol, precioCol);
+  } else {
+    showMappingUI(codigoCol, descCol, precioCol);
+  }
+});
+
+function showMappingUI(codigoCol, descCol, precioCol){
+  const box = document.getElementById('mappingBox');
+  box.style.display = 'block';
+  const selCodigo = document.getElementById('mapCodigo');
+  const selDesc = document.getElementById('mapDescripcion');
+  const selPrecio = document.getElementById('mapPrecio');
+  [selCodigo, selDesc, selPrecio].forEach(sel=>{
+    sel.innerHTML = headers.map((h,i)=>`<option value="${i}">${h || '(columna '+(i+1)+')'}</option>`).join('');
+  });
+  if(codigoCol) selCodigo.value = headers.indexOf(codigoCol);
+  if(descCol) selDesc.value = headers.indexOf(descCol);
+  if(precioCol) selPrecio.value = headers.indexOf(precioCol);
+
+  const table = document.getElementById('previewTable');
+  const previewRows = rawRows.slice(0,5);
+  table.innerHTML = '<tr>'+headers.map(h=>`<th>${h}</th>`).join('')+'</tr>' +
+    previewRows.map(r=>'<tr>'+headers.map((_,i)=>`<td>${r[i]??''}</td>`).join('')+'</tr>').join('');
+}
+
+document.getElementById('confirmMapping').addEventListener('click', ()=>{
+  const codigoCol = headers[document.getElementById('mapCodigo').value];
+  const descCol = headers[document.getElementById('mapDescripcion').value];
+  const precioCol = headers[document.getElementById('mapPrecio').value];
+  applyMapping(codigoCol, descCol, precioCol);
+  document.getElementById('mappingBox').style.display = 'none';
+});
+
+function applyMapping(codigoCol, descCol, precioCol){
+  const ci = headers.indexOf(codigoCol), di = headers.indexOf(descCol), pi = headers.indexOf(precioCol);
+  currentList = rawRows.map(r=>({
+    codigo: (r[ci]??'').toString().trim(),
+    descripcion: (r[di]??'').toString().trim(),
+    precio: parsePrice(r[pi])
+  })).filter(x=>x.codigo);
+
+  document.getElementById('fileStatus').textContent = `${currentList.length} productos cargados.`;
+  document.getElementById('loadedSummary').style.display = 'block';
+  document.getElementById('summaryText').textContent = `${currentList.length} productos listos para generar etiquetas.`;
+
+  renderLabels(currentList);
+  compareWithBaseline();
+}
+
+// ---------- Baseline (localStorage) ----------
+function loadBaseline(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function saveBaseline(list){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({savedAt: new Date().toISOString(), items:list}));
+  refreshBaselineInfo();
+}
+function refreshBaselineInfo(){
+  const b = loadBaseline();
+  const el = document.getElementById('baselineInfo');
+  if(!b){ el.textContent = 'Todavía no guardaste ninguna lista base.'; return; }
+  const d = new Date(b.savedAt);
+  el.textContent = `Lista base guardada el ${d.toLocaleString('es-AR')} con ${b.items.length} productos.`;
+}
+document.getElementById('btnClearBaseline').addEventListener('click', ()=>{
+  if(confirm('¿Borrar la lista base guardada?')){
+    localStorage.removeItem(STORAGE_KEY);
+    refreshBaselineInfo();
+  }
+});
+document.getElementById('btnSaveBaseline').addEventListener('click', ()=>{
+  if(!currentList.length){ alert('Primero importá un Excel.'); return; }
+  saveBaseline(currentList);
+  alert('Lista base actualizada. La próxima importación se va a comparar contra esta.');
+});
+refreshBaselineInfo();
+
+function compareWithBaseline(){
+  const baseline = loadBaseline();
+  const wrap = document.getElementById('changesTableWrap');
+  const summary = document.getElementById('changesSummary');
+  if(!baseline){
+    summary.textContent = 'No hay lista base guardada todavía. Guardá esta lista como base para poder comparar la próxima vez.';
+    wrap.innerHTML = '';
+    document.getElementById('btnPrintChanged').disabled = true;
+    comparison = {changed:[], added:[]};
+    return;
+  }
+  const baseMap = new Map(baseline.items.map(i=>[i.codigo, i]));
+  const changed = [];
+  const added = [];
+  for(const item of currentList){
+    const prev = baseMap.get(item.codigo);
+    if(!prev){ added.push(item); }
+    else if(Math.round(prev.precio*100) !== Math.round(item.precio*100)){
+      changed.push({...item, precioAnterior: prev.precio});
+    }
+  }
+  comparison = {changed, added};
+  summary.textContent = `Comparado contra la lista guardada el ${new Date(baseline.savedAt).toLocaleString('es-AR')}: ${changed.length} precios cambiados, ${added.length} productos nuevos.`;
+
+  const rowsHtml = [
+    ...changed.map(c=>`
+      <tr class="changed" data-codigo="${c.codigo}" data-kind="changed">
+        <td><input type="checkbox" class="rowcheck" checked></td>
+        <td>${c.codigo}</td>
+        <td>${c.descripcion}</td>
+        <td><span class="price-old">$${c.precioAnterior.toFixed(2)}</span><span class="price-new">$${c.precio.toFixed(2)}</span></td>
+        <td><span class="badge changed">CAMBIÓ</span></td>
+      </tr>`),
+    ...added.map(c=>`
+      <tr class="new" data-codigo="${c.codigo}" data-kind="added">
+        <td><input type="checkbox" class="rowcheck"></td>
+        <td>${c.codigo}</td>
+        <td>${c.descripcion}</td>
+        <td><span class="price-new">$${c.precio.toFixed(2)}</span></td>
+        <td><span class="badge new">NUEVO</span></td>
+      </tr>`)
+  ].join('');
+
+  wrap.innerHTML = `<table>
+    <tr><th></th><th>Código</th><th>Descripción</th><th>Precio</th><th>Estado</th></tr>
+    ${rowsHtml || '<tr><td colspan="5" class="muted">Sin cambios de precio 🎉</td></tr>'}
+  </table>`;
+  document.getElementById('btnPrintChanged').disabled = (changed.length + added.length) === 0;
+}
+
+document.getElementById('btnSelectAllChanged').addEventListener('click', ()=>{
+  document.querySelectorAll('#changesTableWrap tr.changed .rowcheck').forEach(cb=>cb.checked = true);
+});
+document.getElementById('btnSelectNone').addEventListener('click', ()=>{
+  document.querySelectorAll('#changesTableWrap .rowcheck').forEach(cb=>cb.checked = false);
+});
+document.getElementById('btnPrintChanged').addEventListener('click', ()=>{
+  const codigos = new Set();
+  document.querySelectorAll('#changesTableWrap tr').forEach(tr=>{
+    const cb = tr.querySelector('.rowcheck');
+    if(cb && cb.checked) codigos.add(tr.dataset.codigo);
+  });
+  if(!codigos.size){ alert('Seleccioná al menos un producto.'); return; }
+  const list = currentList.filter(i=>codigos.has(i.codigo));
+  renderLabels(list);
+  document.querySelector('.tab[data-tab=etiquetas]').click();
+  setTimeout(()=>window.print(), 200);
+});
+
+// ---------- Labels ----------
+function renderLabels(list){
+  const grid = document.getElementById('labelsGrid');
+  grid.innerHTML = list.map(item=>`
+    <div class="label">
+      <div class="desc">${item.descripcion}</div>
+      <div class="price">${formatPrice(item.precio)}</div>
+      <div class="code">${item.codigo}</div>
+    </div>
+  `).join('');
+}
+
+function applyLabelOptions(){
+  const cols = document.getElementById('colsSelect').value;
+  const h = document.getElementById('labelHeight').value;
+  document.getElementById('labelsGrid').style.setProperty('--cols', cols);
+  document.getElementById('labelsGrid').style.setProperty('--label-h', h + 'mm');
+}
+document.getElementById('colsSelect').addEventListener('change', applyLabelOptions);
+document.getElementById('labelHeight').addEventListener('input', applyLabelOptions);
+applyLabelOptions();
+
+document.getElementById('filterText').addEventListener('input', (e)=>{
+  const q = norm(e.target.value);
+  const filtered = q ? currentList.filter(i=>norm(i.descripcion).includes(q) || norm(i.codigo).includes(q)) : currentList;
+  renderLabels(filtered);
+});
+
+document.getElementById('btnPrintAll').addEventListener('click', ()=>{
+  renderLabels(currentList);
+  window.print();
+});
+</script>
+</body>
+</html>
