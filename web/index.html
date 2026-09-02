@@ -17,381 +17,515 @@
 
 <style>
   :root{
-    --teal:#4A9E92; --teal-dark:#3A8074; --teal-soft:#E9F4F2; --teal-line:#BFDFD9;
-    --ink:#3D4142; --ink-soft:#5E6668; --gris:#8A9192;
-    --bg:#F2F5F5; --panel:#fff; --line:#DFE5E5;
-    --warn:#B4761F; --warn-soft:#FDF4E5; --ok:#2E7D5B; --ok-soft:#E8F5EE;
-    --shadow:0 1px 2px rgba(61,65,66,.05), 0 4px 16px rgba(61,65,66,.06);
+    /* Marca */
+    --teal:#4A9E92; --teal-600:#3E8A7F; --teal-700:#316E65;
+    --teal-50:#F0F8F6; --teal-100:#DCEDEA; --teal-200:#B9DBD5;
+    --ink:#2F3436; --ink-2:#4A5254; --ink-3:#6E7779; --ink-4:#98A1A3;
+    /* Superficies */
+    --bg:#F6F8F8; --surface:#FFFFFF; --surface-2:#FBFCFC;
+    --line:#E4EAEA; --line-2:#D3DBDB;
+    /* Semánticos */
+    --up:#A9631A; --up-50:#FDF5EA; --down:#2C7A5B; --down-50:#EAF6F0;
+    /* Elevación */
+    --e1:0 1px 2px rgba(31,41,42,.04), 0 1px 3px rgba(31,41,42,.05);
+    --e2:0 2px 4px rgba(31,41,42,.04), 0 6px 16px rgba(31,41,42,.07);
+    --e3:0 8px 28px rgba(31,41,42,.12);
+    --r-sm:8px; --r:11px; --r-lg:16px; --r-xl:20px;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
   body{
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-    background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;
-    -webkit-font-smoothing:antialiased;
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    font-feature-settings:"cv02","cv03","ss01";
   }
+  ::selection{background:var(--teal-100)}
 
-  /* ---------- Header ---------- */
+  /* ============ Topbar ============ */
   .topbar{
-    background:var(--panel);border-bottom:1px solid var(--line);
-    padding:12px 24px;display:flex;align-items:center;gap:18px;
-    position:sticky;top:0;z-index:40;
+    position:sticky;top:0;z-index:60;
+    background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(12px);
+    border-bottom:1px solid var(--line);
+    padding:0 28px;height:64px;display:flex;align-items:center;gap:20px;
   }
-  .brand{display:flex;align-items:center;gap:0;height:38px}
-  .brand svg,.brand img{height:38px;width:auto;display:block}
-  .crumb{
-    display:flex;align-items:center;gap:8px;color:var(--gris);font-size:13px;font-weight:600;
-    padding-left:18px;margin-left:2px;border-left:1px solid var(--line);
+  .brandbtn{
+    background:none;border:none;padding:6px 8px;margin-left:-8px;border-radius:var(--r-sm);
+    display:flex;align-items:center;cursor:pointer;transition:background .15s;
   }
-  .crumb .step{color:var(--ink)}
-  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:10px}
-  .file-chip{
-    display:inline-flex;align-items:center;gap:8px;background:var(--teal-soft);
-    color:var(--teal-dark);border:1px solid var(--teal-line);
-    padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;
-  }
+  .brandbtn:hover{background:var(--teal-50)}
+  .brandbtn:active{transform:scale(.985)}
+  .brandbtn svg,.brandbtn img{height:40px;width:auto;display:block}
 
-  /* ---------- Estructura ---------- */
-  main{max-width:1180px;margin:0 auto;padding:28px 24px 110px}
+  /* Stepper */
+  .steps{display:flex;align-items:center;gap:0;margin-left:6px}
+  .steps .s{
+    display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;
+    font-size:12.5px;font-weight:600;color:var(--ink-4);white-space:nowrap;
+  }
+  .steps .s .n{
+    width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
+    background:var(--line);color:var(--ink-4);font-size:11px;font-weight:700;flex:none;
+  }
+  .steps .s.done{color:var(--ink-3)}
+  .steps .s.done .n{background:var(--teal-100);color:var(--teal-700)}
+  .steps .s.on{color:var(--teal-700);background:var(--teal-50)}
+  .steps .s.on .n{background:var(--teal);color:#fff}
+  .steps .sep{width:14px;height:1px;background:var(--line-2);flex:none}
+  @media(max-width:960px){.steps{display:none}}
+
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .chip{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-200);
+    padding:6px 13px;border-radius:999px;font-size:12px;font-weight:600;
+  }
+  .chip .pt{width:6px;height:6px;border-radius:50%;background:var(--teal);flex:none}
+
+  /* ============ Layout ============ */
+  main{max-width:1200px;margin:0 auto;padding:34px 28px 120px}
   .view{display:none}
-  .view.active{display:block}
-  h2.title{font-size:24px;font-weight:700;margin:0 0 6px;letter-spacing:-.4px}
-  p.sub{color:var(--ink-soft);margin:0 0 24px;font-size:14px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:var(--shadow)}
+  .view.active{display:block;animation:rise .28s cubic-bezier(.16,1,.3,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-  /* ---------- Botones ---------- */
-  button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-weight:600;font-size:13px;padding:10px 18px;transition:background .12s,border-color .12s}
-  .btn-primary{background:var(--teal);color:#fff}
-  .btn-primary:hover{background:var(--teal-dark)}
-  .btn-dark{background:var(--ink);color:#fff}
-  .btn-dark:hover{background:#2C2F30}
-  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
-  .btn-ghost:hover{border-color:var(--gris)}
-  .btn-link{background:none;color:var(--ink-soft);padding:6px 4px}
-  .btn-link:hover{color:var(--teal-dark)}
-  .btn-sm{padding:7px 12px;font-size:12px}
-  button:disabled{opacity:.4;cursor:not-allowed}
-  input,select,textarea{font-family:inherit;font-size:13px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
-  input:focus,select:focus,textarea:focus{outline:2px solid var(--teal-line);outline-offset:-1px;border-color:var(--teal)}
-  label.check{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+  .head{margin-bottom:26px}
+  .head h2{font-size:27px;font-weight:750;letter-spacing:-.7px;margin:0 0 5px;line-height:1.2}
+  .head p{color:var(--ink-3);margin:0;font-size:14.5px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--e1)}
+  .pad{padding:24px}
+
+  /* ============ Controles ============ */
+  button{
+    font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;border:1px solid transparent;
+    border-radius:var(--r);padding:10px 18px;transition:background .15s,border-color .15s,box-shadow .15s,transform .08s;
+  }
+  button:active{transform:translateY(1px)}
+  button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  .b-primary{background:var(--teal);color:#fff;box-shadow:0 1px 2px rgba(49,110,101,.25)}
+  .b-primary:hover{background:var(--teal-600)}
+  .b-dark{background:var(--ink);color:#fff}
+  .b-dark:hover{background:#1E2223}
+  .b-soft{background:var(--teal-50);color:var(--teal-700);border-color:var(--teal-200)}
+  .b-soft:hover{background:var(--teal-100)}
+  .b-ghost{background:var(--surface);color:var(--ink-2);border-color:var(--line-2)}
+  .b-ghost:hover{border-color:var(--ink-4);background:var(--surface-2)}
+  .b-quiet{background:none;color:var(--ink-3);padding:8px 6px}
+  .b-quiet:hover{color:var(--teal-700)}
+  .sm{padding:7px 13px;font-size:12.5px}
+  button:disabled{opacity:.42;cursor:not-allowed;transform:none}
+
+  input,select,textarea{
+    font:inherit;font-size:13.5px;padding:10px 13px;color:var(--ink);
+    border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);
+    transition:border-color .15s,box-shadow .15s;
+  }
+  input::placeholder{color:var(--ink-4)}
+  input:focus,select:focus,textarea:focus{
+    outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-100);
+  }
   input[type=checkbox]{accent-color:var(--teal);width:16px;height:16px;cursor:pointer}
+  label.chk{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:13px;color:var(--ink-2)}
+  .search{position:relative;flex:1;min-width:200px}
+  .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-4);pointer-events:none}
+  .search input{width:100%;padding-left:38px}
 
-  /* ---------- Inicio ---------- */
-  .hero{text-align:center;padding:46px 20px 10px}
-  .hero .biglogo{height:88px;margin-bottom:26px}
-  .hero .biglogo svg,.hero .biglogo img{height:88px;width:auto}
-  .hero h1{font-size:27px;font-weight:700;margin:0 0 8px;letter-spacing:-.5px}
-  .hero p{color:var(--ink-soft);margin:0 auto 30px;max-width:520px}
-  .loadbox{max-width:560px;margin:0 auto;text-align:left}
-  .auto-ok{
-    display:flex;align-items:center;gap:16px;background:var(--teal-soft);
-    border:1px solid var(--teal-line);border-radius:14px;padding:20px 22px;margin-bottom:16px;
+  /* ============ Inicio ============ */
+  .hero{text-align:center;padding:38px 20px 34px}
+  .hero .lg{margin-bottom:28px}
+  .hero .lg svg,.hero .lg img{height:76px;width:auto}
+  .hero h1{font-size:31px;font-weight:750;letter-spacing:-1px;margin:0 0 10px}
+  .hero p{color:var(--ink-3);margin:0 auto;max-width:480px;font-size:15px}
+  .load{max-width:580px;margin:0 auto}
+  .ready{
+    display:flex;align-items:center;gap:16px;padding:20px 22px;margin-bottom:14px;
+    background:linear-gradient(180deg,var(--teal-50),#fff);
+    border:1px solid var(--teal-200);border-radius:var(--r-lg);box-shadow:var(--e1);
   }
-  .auto-ok .dot{width:10px;height:10px;border-radius:50%;background:var(--teal);flex:none}
-  .auto-ok .info{flex:1}
-  .auto-ok .info strong{display:block;font-size:15px}
-  .auto-ok .info span{color:var(--teal-dark);font-size:13px}
+  .ready .ic{width:40px;height:40px;border-radius:11px;background:var(--teal);color:#fff;display:grid;place-items:center;flex:none}
+  .ready .tx{flex:1;min-width:0}
+  .ready .tx strong{display:block;font-size:14.5px;letter-spacing:-.2px}
+  .ready .tx span{color:var(--teal-700);font-size:12.5px}
   .drop{
-    border:2px dashed var(--line);border-radius:14px;padding:30px;text-align:center;background:#fff;
+    border:1.5px dashed var(--line-2);border-radius:var(--r-lg);padding:34px 24px;text-align:center;
+    background:var(--surface);transition:border-color .15s,background .15s;
   }
-  .drop.hot{border-color:var(--teal);background:var(--teal-soft)}
-  .drop p{margin:0 0 14px;color:var(--ink-soft)}
+  .drop.hot{border-color:var(--teal);background:var(--teal-50)}
+  .drop .di{color:var(--ink-4);margin-bottom:12px}
+  .drop p{margin:0 0 16px;color:var(--ink-3);font-size:13.5px}
+  .msg{margin-top:14px;color:var(--ink-3);font-size:13px}
 
-  /* ---------- Menú de 2 opciones ---------- */
-  .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px}
-  @media(max-width:760px){.menu-grid{grid-template-columns:1fr}}
-  .menu-card{
-    background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:32px 28px;
-    text-align:left;cursor:pointer;box-shadow:var(--shadow);position:relative;overflow:hidden;
-    transition:transform .12s,box-shadow .12s,border-color .12s;
+  /* ============ Menú ============ */
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:800px){.duo{grid-template-columns:1fr}}
+  .big-card{
+    text-align:left;padding:30px 28px;border-radius:var(--r-xl);border:1px solid var(--line);
+    background:var(--surface);box-shadow:var(--e1);cursor:pointer;position:relative;
+    transition:transform .18s cubic-bezier(.16,1,.3,1),box-shadow .18s,border-color .18s;
+    display:flex;flex-direction:column;gap:0;width:100%;font-weight:400;
   }
-  .menu-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(61,65,66,.11);border-color:var(--teal-line)}
-  .menu-card .ico{
-    width:52px;height:52px;border-radius:13px;display:grid;place-items:center;margin-bottom:18px;
-    background:var(--teal-soft);color:var(--teal-dark);
+  .big-card:hover{transform:translateY(-3px);box-shadow:var(--e3);border-color:var(--teal-200)}
+  .big-card .ic{
+    width:50px;height:50px;border-radius:14px;display:grid;place-items:center;margin-bottom:20px;
+    background:var(--teal);color:#fff;box-shadow:0 4px 12px rgba(74,158,146,.3);
   }
-  .menu-card.alt .ico{background:#EDEFEF;color:var(--ink)}
-  .menu-card h3{margin:0 0 6px;font-size:18px;font-weight:700}
-  .menu-card p{margin:0;color:var(--ink-soft);font-size:13px}
-  .menu-card .tag{
-    display:inline-block;margin-top:14px;font-size:12px;font-weight:700;
-    background:var(--warn-soft);color:var(--warn);padding:3px 10px;border-radius:999px;
+  .big-card.alt .ic{background:var(--ink);box-shadow:0 4px 12px rgba(47,52,54,.22)}
+  .big-card h3{margin:0 0 6px;font-size:19px;font-weight:700;letter-spacing:-.3px}
+  .big-card p{margin:0;color:var(--ink-3);font-size:13.5px;line-height:1.5}
+  .big-card .go{
+    margin-top:20px;display:flex;align-items:center;gap:7px;
+    color:var(--teal-700);font-size:13px;font-weight:700;
   }
-  .menu-card .tag.none{background:#EEF1F1;color:var(--gris)}
+  .big-card:hover .go svg{transform:translateX(3px)}
+  .big-card .go svg{transition:transform .18s}
+  .note{
+    display:inline-flex;align-items:center;gap:7px;margin-top:16px;align-self:flex-start;
+    font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;
+    background:var(--up-50);color:var(--up);
+  }
+  .note.mute{background:#EFF2F2;color:var(--ink-4)}
 
-  /* ---------- Marcas ---------- */
-  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
-  .toolbar .grow{flex:1;min-width:180px}
-  .brand-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:14px}
-  .brand-card{
-    background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px 16px 14px;
-    box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;transition:border-color .12s;
+  /* ============ Toolbar ============ */
+  .bar{display:flex;gap:11px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+
+  /* ============ Marcas ============ */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(266px,1fr));gap:15px}
+  .bcard{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+    padding:18px 18px 16px;box-shadow:var(--e1);display:flex;flex-direction:column;gap:14px;
+    transition:border-color .15s,box-shadow .15s,transform .15s;
   }
-  .brand-card.has-sel{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal-line),var(--shadow)}
-  .brand-card .name{font-weight:700;font-size:15px;line-height:1.25;word-break:break-word}
-  .brand-card .meta{color:var(--gris);font-size:12px;margin-top:2px}
-  .brand-card .sel-badge{
-    display:inline-block;background:var(--teal);color:#fff;font-size:11px;font-weight:700;
-    padding:2px 9px;border-radius:999px;margin-top:6px;
+  .bcard:hover{box-shadow:var(--e2);transform:translateY(-1px)}
+  .bcard.sel{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-100),var(--e1)}
+  .bcard .t{display:flex;align-items:flex-start;gap:10px}
+  .bcard .av{
+    width:38px;height:38px;border-radius:11px;flex:none;display:grid;place-items:center;
+    background:var(--teal-50);color:var(--teal-700);font-weight:750;font-size:15px;letter-spacing:-.5px;
   }
-  .brand-card .acts{display:flex;gap:8px;margin-top:auto}
-  .brand-card .acts button{flex:1;padding:8px 6px;white-space:nowrap}
-
-  /* ---------- Productos ---------- */
-  .plist{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
-  .prow{display:flex;align-items:center;gap:14px;padding:11px 16px;border-bottom:1px solid var(--line);cursor:pointer}
-  .prow:last-child{border-bottom:none}
-  .prow:hover{background:var(--teal-soft)}
-  .prow.on{background:var(--teal-soft)}
-  .prow .desc{flex:1;min-width:0}
-  .prow .desc strong{display:block;font-weight:600}
-  .prow .desc span{color:var(--gris);font-size:12px}
-  .prow .price{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-  .prow .chg{font-size:11px;font-weight:700;color:var(--warn);white-space:nowrap}
-
-  /* ---------- Confirmar ---------- */
-  .confirm{max-width:600px;margin:20px auto;text-align:center}
-  .confirm .big{
-    background:var(--teal-soft);border:1px solid var(--teal-line);border-radius:16px;
-    padding:34px 24px;margin-bottom:24px;
+  .bcard.sel .av{background:var(--teal);color:#fff}
+  .bcard .nm{font-weight:700;font-size:15px;letter-spacing:-.2px;line-height:1.25;word-break:break-word}
+  .bcard .mt{color:var(--ink-4);font-size:12.5px;margin-top:1px}
+  .bcard .mt b{color:var(--up)}
+  .bcard .cnt{
+    display:inline-block;margin-top:5px;background:var(--teal);color:#fff;
+    font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;
   }
-  .confirm .n{font-size:52px;font-weight:800;color:var(--teal-dark);line-height:1;letter-spacing:-2px}
-  .confirm .n small{font-size:15px;font-weight:600;display:block;margin-top:8px;letter-spacing:0;color:var(--teal-dark)}
-  .confirm .added{color:var(--ink-soft);margin-bottom:22px}
-  .confirm .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-  .confirm .btns button{padding:14px 24px;font-size:14px}
+  .bcard .ac{display:flex;gap:8px;margin-top:auto}
+  .bcard .ac button{flex:1;padding:9px 8px;font-size:12.5px;white-space:nowrap}
 
-  /* ---------- Cambios ---------- */
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
-  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
-  .stat .v{font-size:27px;font-weight:800;letter-spacing:-1px;line-height:1.1}
-  .stat .l{color:var(--gris);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
-  .stat.up .v{color:var(--warn)} .stat.new .v{color:var(--ok)}
-  table{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
-  th,td{padding:10px 14px;border-bottom:1px solid var(--line);text-align:left}
-  th{color:var(--gris);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:#FAFBFB;position:sticky;top:0}
-  td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-  .old{color:var(--gris);text-decoration:line-through;margin-right:8px}
-  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700}
-  .pill.up{background:var(--warn-soft);color:var(--warn)}
-  .pill.new{background:var(--ok-soft);color:var(--ok)}
-  .scroll{max-height:56vh;overflow:auto;border:1px solid var(--line);border-radius:12px}
-  .empty{padding:40px;text-align:center;color:var(--gris)}
-
-  /* ---------- Barra inferior ---------- */
-  .actionbar{
-    position:fixed;left:0;right:0;bottom:0;z-index:50;
-    background:var(--ink);color:#fff;padding:13px 24px;display:none;align-items:center;gap:16px;
+  /* ============ Lista de productos ============ */
+  .list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--e1)}
+  .row{
+    display:flex;align-items:center;gap:14px;padding:13px 18px;
+    border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s;
   }
-  .actionbar.show{display:flex}
-  .actionbar .cnt{font-size:15px;font-weight:700}
-  .actionbar .cnt span{color:var(--teal);font-size:18px}
-  .actionbar .sp{margin-left:auto}
-  .actionbar .btn-ghost{background:transparent;color:#fff;border-color:#5A6062}
-  .actionbar .btn-ghost:hover{border-color:#fff}
+  .row:last-child{border-bottom:none}
+  .row:hover{background:var(--surface-2)}
+  .row.on{background:var(--teal-50)}
+  .row .tx{flex:1;min-width:0}
+  .row .tx strong{display:block;font-weight:600;font-size:13.8px;letter-spacing:-.1px}
+  .row .tx span{color:var(--ink-4);font-size:12px;font-variant-numeric:tabular-nums}
+  .row .pr{font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:14.5px}
+  .row .was{color:var(--ink-4);font-size:12px;text-decoration:line-through;white-space:nowrap}
 
-  /* ================= ETIQUETAS ================= */
-  .opts{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
-  .opts label{display:flex;align-items:center;gap:7px;color:var(--ink-soft);font-size:12px;font-weight:600}
-  .opts input[type=number],.opts select{padding:6px 9px;width:74px}
-  .sheet{background:#fff;padding:0}
-  /* borde izquierdo y superior del pliego: cada etiqueta aporta el suyo derecho e inferior,
-     asi el marco de corte queda cerrado sin lineas dobles */
+  /* ============ Confirmar ============ */
+  .conf{max-width:560px;margin:26px auto;text-align:center}
+  .conf .box{
+    background:linear-gradient(180deg,var(--teal-50),#fff);border:1px solid var(--teal-200);
+    border-radius:var(--r-xl);padding:38px 24px;margin-bottom:26px;box-shadow:var(--e1);
+  }
+  .conf .num{font-size:60px;font-weight:800;color:var(--teal-700);line-height:1;letter-spacing:-3px}
+  .conf .lb{font-size:14px;font-weight:600;color:var(--teal-700);margin-top:10px}
+  .conf .add{color:var(--ink-3);margin:0 0 26px;font-size:14px}
+  .conf h3{font-size:20px;font-weight:700;letter-spacing:-.4px;margin:0 0 6px}
+  .conf .sb{color:var(--ink-3);margin:0 0 24px;font-size:14px}
+  .conf .bt{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .conf .bt button{padding:14px 26px;font-size:14px}
+
+  /* ============ Cambios ============ */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:13px;margin-bottom:22px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--e1)}
+  .kpi .v{font-size:30px;font-weight:780;letter-spacing:-1.4px;line-height:1.05}
+  .kpi .k{color:var(--ink-4);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+  .kpi.up .v{color:var(--up)} .kpi.dn .v{color:var(--down)}
+  table{width:100%;border-collapse:collapse;font-size:13.2px;background:var(--surface)}
+  th,td{padding:12px 16px;border-bottom:1px solid var(--line);text-align:left}
+  th{
+    color:var(--ink-4);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    background:var(--surface-2);position:sticky;top:0;z-index:1;
+  }
+  tbody tr:hover{background:var(--surface-2)}
+  tbody tr:last-child td{border-bottom:none}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .was{color:var(--ink-4);text-decoration:line-through;margin-right:8px;font-size:12.5px}
+  .tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
+  .tag.up{background:var(--up-50);color:var(--up)}
+  .tag.new{background:var(--down-50);color:var(--down)}
+  .scroll{max-height:58vh;overflow:auto;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--e1)}
+  .none{padding:52px 24px;text-align:center;color:var(--ink-4)}
+  .none svg{margin-bottom:12px;color:var(--line-2)}
+
+  /* ============ Barra flotante ============ */
+  .dock{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140%);
+    z-index:70;background:var(--ink);color:#fff;border-radius:999px;
+    padding:11px 12px 11px 24px;display:flex;align-items:center;gap:18px;
+    box-shadow:0 12px 34px rgba(31,41,42,.3);transition:transform .28s cubic-bezier(.16,1,.3,1);
+  }
+  .dock.up{transform:translateX(-50%) translateY(0)}
+  .dock .n{font-size:14px;font-weight:600;white-space:nowrap}
+  .dock .n b{font-size:17px;font-weight:750;color:#8FD3C8;margin-right:3px}
+  .dock .x{background:none;border:none;color:#A9B3B4;padding:8px 10px;font-size:12.5px}
+  .dock .x:hover{color:#fff}
+
+  /* ================= ETIQUETAS =================
+     Se imprimen en laser BLANCO Y NEGRO: nada de color, todo contraste puro. */
+  .opts{display:flex;gap:18px;align-items:center;flex-wrap:wrap;padding:16px 20px}
+  .opts label{display:flex;align-items:center;gap:8px;color:var(--ink-3);font-size:12.5px;font-weight:600}
+  .opts input[type=number],.opts select{padding:7px 10px;width:72px;font-size:13px}
+  .sheet{padding:0;overflow:hidden}
   .labels{
     display:grid;grid-template-columns:repeat(var(--cols,3),1fr);gap:0;
-    border-left:1px dashed #C6CDCD;border-top:1px dashed #C6CDCD;
+    border-left:1px dashed #BFC6C6;border-top:1px dashed #BFC6C6;background:#fff;
   }
-
   .lbl{
-    position:relative;height:var(--lh,45mm);padding:0;overflow:hidden;
-    border-right:1px dashed #C6CDCD;border-bottom:1px dashed #C6CDCD;
-    display:flex;flex-direction:column;background:#fff;break-inside:avoid;
+    position:relative;height:var(--lh,45mm);overflow:hidden;background:#fff;
+    border-right:1px dashed #BFC6C6;border-bottom:1px dashed #BFC6C6;
+    display:flex;flex-direction:column;break-inside:avoid;
   }
-  .lbl .bar{height:5px;background:var(--teal);flex:none}
-  .lbl .body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px 10px 4px;min-height:0}
+  .lbl.vacia{background:#fff}
+  .lbl .rule{height:3px;background:#000;flex:none}
+  .lbl .in{
+    flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:8px 11px 5px;text-align:center;
+  }
   .lbl .d{
-    font-size:var(--ds,12px);font-weight:700;color:var(--ink);text-align:center;line-height:1.22;
-    letter-spacing:-.1px;margin-bottom:6px;
-    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    font-size:var(--ds,12px);font-weight:700;color:#000;line-height:1.24;letter-spacing:-.15px;
+    margin-bottom:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
   }
-  .lbl .p{display:flex;align-items:flex-start;justify-content:center;gap:3px;color:#1F2223}
-  .lbl .p .cur{font-size:calc(var(--ps,46px)*.36);font-weight:700;color:var(--teal);margin-top:.32em}
-  .lbl .p .int{font-size:var(--ps,46px);font-weight:800;line-height:.92;letter-spacing:-2px}
-  .lbl .p .dec{font-size:calc(var(--ps,46px)*.42);font-weight:800;margin-top:.12em;letter-spacing:-.5px}
-  .lbl .foot{
-    display:flex;align-items:center;gap:8px;padding:5px 10px;border-top:1px solid #EAEFEF;flex:none;
+  .lbl .pz{display:flex;align-items:flex-start;justify-content:center;gap:2px;color:#000}
+  .lbl .pz .cu{font-size:calc(var(--ps,46px)*.34);font-weight:700;margin-top:.36em;letter-spacing:-.5px}
+  .lbl .pz .en{font-size:var(--ps,46px);font-weight:800;line-height:.9;letter-spacing:-2.5px}
+  .lbl .pz .ce{font-size:calc(var(--ps,46px)*.42);font-weight:800;margin-top:.1em;letter-spacing:-1px}
+  .lbl .ft{
+    display:flex;align-items:center;gap:8px;padding:4px 10px;flex:none;
+    border-top:1px solid #D8DEDE;min-height:0;
   }
-  .lbl .foot .cod{font-size:10px;color:#7C8384;letter-spacing:.04em;font-variant-numeric:tabular-nums}
-  .lbl .foot .mk{margin-left:auto;height:12px;width:12px;opacity:.85}
-  .lbl .foot .nm{font-size:8.5px;font-weight:700;color:#9AA1A2;letter-spacing:.08em}
+  .lbl .ft .cd{font-size:10px;color:#3A4041;letter-spacing:.05em;font-variant-numeric:tabular-nums;font-weight:600}
+  .lbl .ft .mk{margin-left:auto;display:flex;align-items:center;gap:5px}
+  .lbl .ft .mk svg{height:13px;width:13px}
+  .lbl .ft .mk img{height:23px;width:auto}   /* logo original de la empresa, sin recortar */
+  .lbl .ft .mk span{font-size:8.5px;font-weight:800;color:#000;letter-spacing:.1em}
 
   @media print{
-    .topbar,.actionbar,.no-print{display:none!important}
+    .topbar,.dock,.no-print{display:none!important}
     body{background:#fff}
     main{padding:0;max-width:none}
-    .card{border:none;box-shadow:none;padding:0;border-radius:0}
-    .labels{gap:0}
-    .lbl{border-right:1px dashed #B4BBBB;border-bottom:1px dashed #B4BBBB}
+    .card{border:none;box-shadow:none;border-radius:0}
+    .view.active{animation:none}
+    .labels{border-color:#9AA2A2}
+    .lbl{border-color:#9AA2A2}
     @page{size:A4;margin:7mm}
   }
 </style>
 </head>
 <body>
 
-<!-- Isotipo reutilizable -->
+<!-- Símbolos -->
 <svg style="display:none" aria-hidden="true">
-  <symbol id="iso" viewBox="0 0 132 132">
-    <g transform="rotate(-11 66 66)">
-      <path d="M14 16 L118 16 L118 116 L14 116 Z" fill="#3D4142"/>
-      <path d="M72 16 L118 16 L118 116 L38 116 Z" fill="#4A9E92"/>
-      <path d="M28 31 L104 31 L104 53 L75 53 L75 103 L53 103 L53 53 L28 53 Z" fill="#FFF"/>
+  <!-- Isotipo a color (pantalla) -->
+  <symbol id="iso" viewBox="0 0 138 132">
+    <g transform="rotate(-14 68 66)">
+      <path d="M16 20 L122 20 L122 112 L16 112 Z" fill="#3A3F40"/>
+      <path d="M84 20 L122 20 L122 112 L40 112 Z" fill="#4A9B8E" stroke="#FFF" stroke-width="4.5"/>
+      <path d="M30 33 L108 33 L108 55 L79 55 L79 101 L57 101 L57 55 L30 55 Z" fill="#FFF"/>
+    </g>
+  </symbol>
+  <!-- Isotipo en negro puro (impresión láser B/N) -->
+  <symbol id="isoBN" viewBox="0 0 138 132">
+    <g transform="rotate(-14 68 66)">
+      <path d="M16 20 L122 20 L122 112 L16 112 Z" fill="#000"/>
+      <path d="M84 20 L122 20 L122 112 L40 112 Z" fill="#000" stroke="#FFF" stroke-width="4.5"/>
+      <path d="M30 33 L108 33 L108 55 L79 55 L79 101 L57 101 L57 55 L30 55 Z" fill="#FFF"/>
     </g>
   </symbol>
   <symbol id="logofull" viewBox="0 0 540 150">
-    <g transform="translate(4,8) rotate(-11 66 66)">
-      <path d="M14 16 L118 16 L118 116 L14 116 Z" fill="#3D4142"/>
-      <path d="M72 16 L118 16 L118 116 L38 116 Z" fill="#4A9E92"/>
-      <path d="M28 31 L104 31 L104 53 L75 53 L75 103 L53 103 L53 53 L28 53 Z" fill="#FFF"/>
+    <g transform="translate(2,6) rotate(-14 68 66)">
+      <path d="M16 20 L122 20 L122 112 L16 112 Z" fill="#3A3F40"/>
+      <path d="M84 20 L122 20 L122 112 L40 112 Z" fill="#4A9B8E" stroke="#FFF" stroke-width="4.5"/>
+      <path d="M30 33 L108 33 L108 55 L79 55 L79 101 L57 101 L57 55 L30 55 Z" fill="#FFF"/>
     </g>
-    <text x="152" y="78" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="62" font-weight="600" letter-spacing="1.5" fill="#3D4142">TUMALAC</text>
+    <text x="152" y="78" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="62" font-weight="600" letter-spacing="1.5" fill="#3A3F40">TUMALAC</text>
     <text x="156" y="114" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="25" letter-spacing="7.4" fill="#6E7677">DISTRIBUIDORA</text>
   </symbol>
 </svg>
 
-<div class="topbar no-print">
-  <div class="brand" id="brandSlot"><svg viewBox="0 0 540 150" style="height:38px"><use href="#logofull"/></svg></div>
-  <div class="crumb" id="crumb" style="display:none"><span class="step" id="crumbText"></span></div>
+<header class="topbar no-print">
+  <button class="brandbtn" id="brandBtn" title="Volver al inicio" aria-label="Volver al inicio">
+    <svg viewBox="0 0 540 150" style="height:34px"><use href="#logofull"/></svg>
+  </button>
+
+  <nav class="steps" id="steps">
+    <span class="s" data-s="1"><span class="n">1</span>Lista</span><span class="sep"></span>
+    <span class="s" data-s="2"><span class="n">2</span>Productos</span><span class="sep"></span>
+    <span class="s" data-s="3"><span class="n">3</span>Etiquetas</span>
+  </nav>
+
   <div class="right">
-    <span class="file-chip" id="fileChip" style="display:none"></span>
-    <button class="btn-ghost btn-sm" id="btnHome" style="display:none">Inicio</button>
+    <span class="chip" id="chip" style="display:none"><span class="pt"></span><span id="chipTx"></span></span>
   </div>
-</div>
+</header>
 
 <main>
 
 <!-- ==================== INICIO ==================== -->
 <section class="view active" id="v-inicio">
   <div class="hero">
-    <div class="biglogo"><svg viewBox="0 0 540 150" style="height:88px"><use href="#logofull"/></svg></div>
-    <h1>Etiquetas de precios de góndola</h1>
-    <p>Tomá la lista de precios de Chess y armá las etiquetas para la góndola en dos pasos.</p>
+    <div class="lg"><svg viewBox="0 0 540 150" style="height:76px"><use href="#logofull"/></svg></div>
+    <h1>Etiquetas de precios</h1>
+    <p>De la lista de Chess a la góndola, sin pasar por Excel.</p>
   </div>
 
-  <div class="loadbox">
-    <div class="auto-ok" id="autoBox" style="display:none">
-      <span class="dot"></span>
-      <div class="info">
-        <strong id="autoTitle"></strong>
-        <span id="autoSub"></span>
-      </div>
-      <button class="btn-primary" id="btnUsarAuto">Continuar</button>
+  <div class="load">
+    <!-- Ya hay una lista en uso -->
+    <div class="ready" id="working" style="display:none">
+      <span class="ic">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </span>
+      <div class="tx"><strong id="workTitle"></strong><span id="workSub"></span></div>
+      <button class="b-primary" id="btnSeguirTrabajando">Continuar</button>
+    </div>
+
+    <!-- Lista descargada por el agente -->
+    <div class="ready" id="autoBox" style="display:none">
+      <span class="ic">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="m7 12 5 5 5-5"/><path d="M5 21h14"/></svg>
+      </span>
+      <div class="tx"><strong id="autoTitle"></strong><span id="autoSub"></span></div>
+      <button class="b-primary" id="btnUsarAuto">Usar esta lista</button>
     </div>
 
     <div class="drop" id="drop">
-      <p id="dropText">Arrastrá acá el Excel de Chess, o elegilo desde tu compu.</p>
+      <div class="di">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+      </div>
+      <p id="dropText">Arrastrá el Excel de Chess acá, o elegilo de tu compu.</p>
       <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none">
-      <button class="btn-ghost" id="btnPick">Elegir archivo</button>
-      <div id="loadMsg" style="margin-top:14px;color:var(--ink-soft);font-size:13px"></div>
+      <button class="b-ghost" id="btnPick">Elegir archivo</button>
+      <div class="msg" id="loadMsg"></div>
     </div>
 
-    <div id="mapBox" class="card" style="display:none;margin-top:16px">
-      <strong style="display:block;margin-bottom:4px">Verificá las columnas</strong>
-      <p style="color:var(--ink-soft);font-size:13px;margin:0 0 14px">
-        El export de Chess usa E, F, S y AA. Ya vienen preseleccionadas.
-      </p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
-        <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:var(--gris)">CÓDIGO<select id="mCod"></select></label>
-        <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:var(--gris)">DESCRIPCIÓN<select id="mDesc"></select></label>
-        <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:var(--gris)">PRECIO<select id="mPre"></select></label>
-        <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:var(--gris)">MARCA<select id="mMar"></select></label>
+    <div id="mapBox" class="card pad" style="display:none;margin-top:16px">
+      <strong style="display:block;margin-bottom:3px;font-size:15px;letter-spacing:-.2px">Verificá las columnas</strong>
+      <p style="color:var(--ink-3);font-size:13px;margin:0 0 16px">El export de Chess usa E, F, S y AA. Ya vienen elegidas.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:13px">
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink-4);letter-spacing:.04em">CÓDIGO<select id="mCod"></select></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink-4);letter-spacing:.04em">DESCRIPCIÓN<select id="mDesc"></select></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink-4);letter-spacing:.04em">PRECIO<select id="mPre"></select></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink-4);letter-spacing:.04em">MARCA<select id="mMar"></select></label>
       </div>
-      <div style="margin-top:16px"><button class="btn-primary" id="btnMap">Confirmar y continuar</button></div>
+      <div style="margin-top:18px"><button class="b-primary" id="btnMap">Confirmar y continuar</button></div>
     </div>
   </div>
 </section>
 
 <!-- ==================== MENÚ ==================== -->
 <section class="view" id="v-menu">
-  <h2 class="title">¿Qué querés hacer?</h2>
-  <p class="sub" id="menuSub"></p>
-  <div class="menu-grid">
-    <div class="menu-card" id="cardEtiquetas">
-      <div class="ico">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <div class="head">
+    <h2>¿Qué querés hacer?</h2>
+    <p id="menuSub"></p>
+  </div>
+  <div class="duo">
+    <button class="big-card" id="cardEtiquetas">
+      <span class="ic">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0l-7.2-7.2A2 2 0 0 1 3 12V4a1 1 0 0 1 1-1h8a2 2 0 0 1 1.4.6l7.2 7.2a2 2 0 0 1 0 2.6Z"/>
-          <circle cx="7.5" cy="7.5" r="1.5" fill="currentColor"/>
+          <circle cx="7.5" cy="7.5" r="1.4" fill="currentColor"/>
         </svg>
-      </div>
+      </span>
       <h3>Imprimir etiquetas</h3>
-      <p>Elegí por marca o producto por producto y armá la hoja para imprimir.</p>
-    </div>
+      <p>Elegí marcas completas o producto por producto, y armá la hoja para la góndola.</p>
+      <span class="go">Empezar
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </span>
+    </button>
 
-    <div class="menu-card alt" id="cardCambios">
-      <div class="ico">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h6v6"/>
-        </svg>
-      </div>
+    <button class="big-card alt" id="cardCambios">
+      <span class="ic">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h6v6"/></svg>
+      </span>
       <h3>Ver cambios de precio</h3>
-      <p>Qué cambió contra la lista anterior, para imprimir solo esas etiquetas.</p>
-      <span class="tag none" id="tagCambios">Sin lista anterior guardada</span>
-    </div>
+      <p>Qué subió, qué bajó y qué es nuevo contra la lista anterior, para reimprimir solo eso.</p>
+      <span class="note mute" id="tagCambios">Sin lista anterior guardada</span>
+    </button>
   </div>
 </section>
 
 <!-- ==================== MARCAS ==================== -->
 <section class="view" id="v-marcas">
-  <h2 class="title">Elegí las marcas</h2>
-  <p class="sub">Tocá <strong>Toda la marca</strong> para agregarla completa, o <strong>Elegir productos</strong> para seleccionar de a uno.</p>
-  <div class="toolbar">
-    <input type="text" id="qMarca" class="grow" placeholder="Buscar marca…">
-    <label class="check" style="font-size:13px;color:var(--ink-soft)"><input type="checkbox" id="soloCambios"> Solo marcas con cambio de precio</label>
-    <button class="btn-ghost btn-sm" id="btnLimpiarSel">Vaciar selección</button>
+  <div class="head">
+    <h2>Elegí las marcas</h2>
+    <p><strong>Toda la marca</strong> la agrega completa · <strong>Elegir productos</strong> abre la lista para marcar de a uno.</p>
   </div>
-  <div class="brand-grid" id="brandGrid"></div>
+  <div class="bar">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="text" id="qMarca" placeholder="Buscar marca…">
+    </div>
+    <label class="chk"><input type="checkbox" id="soloCambios"> Solo con cambio de precio</label>
+    <button class="b-ghost sm" id="btnLimpiarSel">Vaciar selección</button>
+  </div>
+  <div class="grid" id="brandGrid"></div>
 </section>
 
-<!-- ==================== PRODUCTOS DE UNA MARCA ==================== -->
+<!-- ==================== PRODUCTOS ==================== -->
 <section class="view" id="v-productos">
-  <h2 class="title" id="pTitle"></h2>
-  <p class="sub" id="pSub"></p>
-  <div class="toolbar">
-    <input type="text" id="qProd" class="grow" placeholder="Buscar producto o código…">
-    <button class="btn-ghost btn-sm" id="btnTodos">Marcar todos</button>
-    <button class="btn-ghost btn-sm" id="btnNinguno">Desmarcar todos</button>
+  <div class="head">
+    <h2 id="pTitle"></h2>
+    <p id="pSub"></p>
   </div>
-  <div class="plist" id="prodList"></div>
-  <div style="margin-top:18px;display:flex;gap:10px">
-    <button class="btn-primary" id="btnAgregar">Agregar a la selección</button>
-    <button class="btn-ghost" id="btnVolverMarcas">Volver a marcas</button>
+  <div class="bar">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="text" id="qProd" placeholder="Buscar producto o código…">
+    </div>
+    <button class="b-ghost sm" id="btnTodos">Marcar todos</button>
+    <button class="b-ghost sm" id="btnNinguno">Desmarcar</button>
+  </div>
+  <div class="list" id="prodList"></div>
+  <div style="margin-top:20px;display:flex;gap:11px">
+    <button class="b-primary" id="btnAgregar">Agregar a la selección</button>
+    <button class="b-ghost" id="btnVolverMarcas">Volver a marcas</button>
   </div>
 </section>
 
-<!-- ==================== ¿SEGUIR AGREGANDO? ==================== -->
+<!-- ==================== CONFIRMAR ==================== -->
 <section class="view" id="v-confirmar">
-  <div class="confirm">
-    <div class="big">
-      <div class="n"><span id="cN">0</span><small>productos en la selección</small></div>
+  <div class="conf">
+    <div class="box">
+      <div class="num" id="cN">0</div>
+      <div class="lb">productos en la selección</div>
     </div>
-    <p class="added" id="cAdded"></p>
-    <h2 class="title" style="font-size:20px">¿Querés seguir agregando productos?</h2>
-    <p class="sub">Podés sumar otra marca o pasar directo a imprimir.</p>
-    <div class="btns">
-      <button class="btn-ghost" id="btnSeguir">Sí, agregar más</button>
-      <button class="btn-primary" id="btnTerminar">No, generar etiquetas</button>
+    <p class="add" id="cAdded"></p>
+    <h3>¿Querés seguir agregando productos?</h3>
+    <p class="sb">Podés sumar otra marca o pasar directo a imprimir.</p>
+    <div class="bt">
+      <button class="b-soft" id="btnSeguir">Sí, agregar más</button>
+      <button class="b-primary" id="btnTerminar">No, generar etiquetas</button>
     </div>
-    <div style="margin-top:16px"><button class="btn-link" id="btnVerSel">Ver la selección completa</button></div>
+    <div style="margin-top:18px"><button class="b-quiet" id="btnVerSel">Ver la selección completa</button></div>
   </div>
 </section>
 
-<!-- ==================== CAMBIOS DE PRECIO ==================== -->
+<!-- ==================== CAMBIOS ==================== -->
 <section class="view" id="v-cambios">
-  <h2 class="title">Cambios de precio</h2>
-  <p class="sub" id="cmpSub"></p>
-  <div class="stats" id="cmpStats"></div>
-  <div class="toolbar">
-    <button class="btn-primary btn-sm" id="btnSelCambios">Seleccionar todos los cambiados</button>
-    <button class="btn-ghost btn-sm" id="btnGuardarBase">Guardar esta lista como base</button>
+  <div class="head">
+    <h2>Cambios de precio</h2>
+    <p id="cmpSub"></p>
+  </div>
+  <div class="kpis" id="cmpKpis"></div>
+  <div class="bar">
+    <button class="b-primary sm" id="btnSelCambios">Seleccionar todos los cambiados</button>
+    <button class="b-ghost sm" id="btnGuardarBase">Guardar esta lista como base</button>
   </div>
   <div class="scroll" id="cmpTable"></div>
 </section>
@@ -399,48 +533,47 @@
 <!-- ==================== ETIQUETAS ==================== -->
 <section class="view" id="v-etiquetas">
   <div class="no-print">
-    <h2 class="title">Etiquetas listas</h2>
-    <p class="sub" id="etSub"></p>
-    <div class="card opts" style="margin-bottom:20px">
+    <div class="head">
+      <h2>Etiquetas listas</h2>
+      <p id="etSub"></p>
+    </div>
+    <div class="card opts" style="margin-bottom:22px">
       <label>Columnas <select id="oCols"><option>2</option><option selected>3</option><option>4</option></select></label>
-      <label>Alto mm <input type="number" id="oH" value="45" min="25" max="120"></label>
+      <label>Filas por hoja <select id="oRows">
+        <option>3</option><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option>
+      </select></label>
       <label>Precio px <input type="number" id="oP" value="46" min="20" max="90"></label>
       <label>Texto px <input type="number" id="oD" value="12" min="8" max="22"></label>
-      <label class="check"><input type="checkbox" id="oCod" checked> Código</label>
-      <label class="check"><input type="checkbox" id="oLogo" checked> Logo</label>
-      <span style="margin-left:auto;display:flex;gap:10px">
-        <button class="btn-ghost" id="btnVolverSel">Cambiar selección</button>
-        <button class="btn-dark" id="btnPrint">Imprimir</button>
+      <label class="chk"><input type="checkbox" id="oCod" checked> Código</label>
+      <label class="chk"><input type="checkbox" id="oLogo" checked> Logo</label>
+      <span style="margin-left:auto;display:flex;gap:11px">
+        <button class="b-ghost" id="btnVolverSel">Cambiar selección</button>
+        <button class="b-dark" id="btnPrint">Imprimir</button>
       </span>
     </div>
   </div>
-  <div class="card sheet">
-    <div class="labels" id="labels"></div>
-  </div>
+  <div class="card sheet"><div class="labels" id="labels"></div></div>
 </section>
 
 </main>
 
-<div class="actionbar no-print" id="bar">
-  <span class="cnt"><span id="barN">0</span> productos seleccionados</span>
-  <span class="sp"></span>
-  <button class="btn-ghost btn-sm" id="barClear">Vaciar</button>
-  <button class="btn-primary" id="barGo">Generar etiquetas</button>
+<div class="dock no-print" id="dock">
+  <span class="n"><b id="dockN">0</b> seleccionados</span>
+  <button class="x" id="dockClear">Vaciar</button>
+  <button class="b-primary sm" id="dockGo">Generar etiquetas</button>
 </div>
 
 <script>
 'use strict';
 const KEY_BASE = 'tumalac_baseline_v2';
 
-let productos = [];        // {codigo, descripcion, marca, precio, estado, precioAnterior}
-let seleccion = new Set(); // códigos elegidos
-let marcaActual = null;
-let ultimoAgregado = '';
+let productos = [], seleccion = new Set(), tmpSel = new Set();
+let marcaActual = null, ultimoAgregado = '', origen = '';
 let headers = [], rawRows = [];
-let origen = '';
+let logoReal = null;   // ruta del logo original, si el usuario lo dejó en la carpeta
 
 const norm = s => (s ?? '').toString().trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-const esc = s => (s ?? '').toString().replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc  = s => (s ?? '').toString().replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function parsePrice(v){
   if(typeof v === 'number') return v;
@@ -458,40 +591,55 @@ const money = n => { const [i,d] = partes(n); return `$${i},${d}`; };
 function colLetter(i){ let s=''; for(let n=i;n>=0;n=Math.floor(n/26)-1) s=String.fromCharCode(65+n%26)+s; return s; }
 
 // ---------- Navegación ----------
-const PASOS = {
-  'menu':'Inicio', 'marcas':'Elegir marcas', 'productos':'Elegir productos',
-  'confirmar':'Confirmar', 'cambios':'Cambios de precio', 'etiquetas':'Etiquetas'
-};
+const PASO = {inicio:1, menu:1, marcas:2, productos:2, confirmar:2, cambios:2, etiquetas:3};
 function ir(v){
   document.querySelectorAll('.view').forEach(s=>s.classList.remove('active'));
   document.getElementById('v-'+v).classList.add('active');
-  const crumb = document.getElementById('crumb');
-  crumb.style.display = PASOS[v] ? 'flex' : 'none';
-  document.getElementById('crumbText').textContent = PASOS[v] || '';
-  document.getElementById('btnHome').style.display = v === 'inicio' ? 'none' : 'inline-block';
-  document.getElementById('bar').classList.toggle('show', ['marcas','productos','cambios'].includes(v) && seleccion.size > 0);
-  window.scrollTo(0,0);
-}
-document.getElementById('btnHome').addEventListener('click', ()=>ir(productos.length ? 'menu' : 'inicio'));
 
-// ---------- Carga automática (datos.js que deja el agente) ----------
-function initAuto(){
+  const n = PASO[v] || 1;
+  document.querySelectorAll('#steps .s').forEach(el=>{
+    const s = +el.dataset.s;
+    el.className = 's' + (s === n ? ' on' : s < n ? ' done' : '');
+  });
+  document.getElementById('steps').style.visibility = productos.length ? 'visible' : 'hidden';
+  if(v === 'inicio') pintarInicio();
+  dock();
+  window.scrollTo({top:0,behavior:'instant'});
+}
+
+// El logo siempre vuelve al inicio
+document.getElementById('brandBtn').addEventListener('click', ()=>ir('inicio'));
+
+function pintarInicio(){
+  const w = document.getElementById('working');
+  if(productos.length){
+    w.style.display = 'flex';
+    document.getElementById('workTitle').textContent = `Lista en uso · ${productos.length} productos`;
+    document.getElementById('workSub').textContent =
+      `${origen}${seleccion.size ? ` · ${seleccion.size} productos seleccionados` : ''}`;
+    document.getElementById('dropText').textContent = 'O cargá otra lista:';
+  } else {
+    w.style.display = 'none';
+  }
+}
+document.getElementById('btnSeguirTrabajando').addEventListener('click', ()=>ir('menu'));
+
+// ---------- Lista que dejó el agente ----------
+(function initAuto(){
   const d = window.DATOS_PRECIOS;
   if(!d || !Array.isArray(d.productos) || !d.productos.length) return;
-  const box = document.getElementById('autoBox');
-  box.style.display = 'flex';
   const f = d.generado ? new Date(d.generado) : null;
+  document.getElementById('autoBox').style.display = 'flex';
   document.getElementById('autoTitle').textContent = `Lista descargada de Chess · ${d.productos.length} productos`;
   document.getElementById('autoSub').textContent = f
     ? `Bajada el ${f.toLocaleDateString('es-AR')} a las ${f.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`
     : (d.archivo || '');
   document.getElementById('dropText').textContent = 'O subí otro Excel a mano:';
   document.getElementById('btnUsarAuto').addEventListener('click', ()=>{
-    origen = 'Chess · ' + (f ? f.toLocaleDateString('es-AR') : 'automático');
+    origen = 'Chess · ' + (f ? f.toLocaleDateString('es-AR') : 'descarga automática');
     cargarProductos(d.productos);
   });
-}
-initAuto();
+})();
 
 // ---------- Carga manual ----------
 const drop = document.getElementById('drop');
@@ -503,9 +651,7 @@ drop.addEventListener('drop', e=>{ const f = e.dataTransfer.files[0]; if(f) leer
 
 async function leerExcel(file){
   const msg = document.getElementById('loadMsg');
-  if(typeof XLSX === 'undefined'){
-    msg.textContent = 'Falta la carpeta "lib" al lado de este archivo.'; return;
-  }
+  if(typeof XLSX === 'undefined'){ msg.textContent = 'Falta la carpeta "lib" al lado de este archivo.'; return; }
   msg.textContent = 'Leyendo ' + file.name + '…';
   const wb = XLSX.read(await file.arrayBuffer(), {type:'array'});
   const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:''});
@@ -521,17 +667,16 @@ async function leerExcel(file){
 
 function mostrarMapeo(){
   // Export de Chess: E=codigo, F=descripcion, S=precio unitario, AA=marca
-  const FIJAS = {cod:4, desc:5, pre:18, mar:26};
-  const ancho = headers.length > FIJAS.pre;
+  const F = {cod:4, desc:5, pre:18, mar:26};
+  const ancho = headers.length > F.pre;
   const opts = headers.map((h,i)=>`<option value="${i}">${colLetter(i)} — ${esc(h) || '(vacío)'}</option>`).join('');
   ['mCod','mDesc','mPre'].forEach(id=>document.getElementById(id).innerHTML = opts);
   document.getElementById('mMar').innerHTML = '<option value="-1">— usar 1ª palabra de la descripción —</option>' + opts;
-
   const buscar = ks => { for(const k of ks){ const i = headers.findIndex(h=>norm(h).includes(k)); if(i>=0) return i; } return -1; };
-  document.getElementById('mCod').value  = ancho ? FIJAS.cod  : Math.max(0, buscar(['codigo','cod.','sku']));
-  document.getElementById('mDesc').value = ancho ? FIJAS.desc : Math.max(0, buscar(['descrip','producto','articulo']));
-  document.getElementById('mPre').value  = ancho ? FIJAS.pre  : Math.max(0, buscar(['precio','unitario','importe']));
-  document.getElementById('mMar').value  = headers.length > FIJAS.mar ? FIJAS.mar : buscar(['marca']);
+  document.getElementById('mCod').value  = ancho ? F.cod  : Math.max(0, buscar(['codigo','cod.','sku']));
+  document.getElementById('mDesc').value = ancho ? F.desc : Math.max(0, buscar(['descrip','producto','articulo']));
+  document.getElementById('mPre').value  = ancho ? F.pre  : Math.max(0, buscar(['precio','unitario','importe']));
+  document.getElementById('mMar').value  = headers.length > F.mar ? F.mar : buscar(['marca']);
   document.getElementById('mapBox').style.display = 'block';
 }
 
@@ -547,9 +692,10 @@ document.getElementById('btnMap').addEventListener('click', ()=>{
       marca: (mi >= 0 ? (r[mi] ?? '').toString().trim() : '') || descripcion.split(/\s+/)[0] || 'Sin marca'
     };
   }));
+  document.getElementById('mapBox').style.display = 'none';
 });
 
-// ---------- Alta de productos + comparación ----------
+// ---------- Carga + comparación ----------
 function cargarProductos(lista){
   productos = lista
     .map(p=>({ codigo:String(p.codigo||'').trim(), descripcion:String(p.descripcion||'').trim(),
@@ -558,10 +704,9 @@ function cargarProductos(lista){
 
   seleccion.clear();
   comparar();
-
-  const chip = document.getElementById('fileChip');
+  const chip = document.getElementById('chip');
   chip.style.display = 'inline-flex';
-  chip.textContent = `${productos.length} productos · ${origen}`;
+  document.getElementById('chipTx').textContent = `${productos.length} productos · ${origen}`;
   document.getElementById('menuSub').textContent =
     `${productos.length} productos con precio, de ${new Set(productos.map(p=>p.marca)).size} marcas.`;
   ir('menu');
@@ -571,11 +716,10 @@ function comparar(){
   let base = null;
   try{ base = JSON.parse(localStorage.getItem(KEY_BASE)); }catch(e){}
   const tag = document.getElementById('tagCambios');
-
   if(!base){
     productos.forEach(p=>{ p.estado = null; p.precioAnterior = null; });
-    tag.className = 'tag none';
-    tag.textContent = 'Sin lista anterior guardada';
+    tag.className = 'note mute'; tag.textContent = 'Sin lista anterior guardada';
+    window.__cmp = null;
     return;
   }
   const m = new Map(base.items.map(i=>[i.codigo, i.precio]));
@@ -586,7 +730,7 @@ function comparar(){
       p.estado='cambio'; p.precioAnterior = m.get(p.codigo); ch++;
     } else { p.estado=null; p.precioAnterior=null; }
   }
-  tag.className = ch ? 'tag' : 'tag none';
+  tag.className = ch ? 'note' : 'note mute';
   tag.textContent = ch ? `${ch} precios cambiados · ${nu} nuevos` : `Sin cambios · ${nu} nuevos`;
   window.__cmp = {ch, nu, fecha: base.savedAt};
 }
@@ -596,12 +740,9 @@ document.getElementById('cardEtiquetas').addEventListener('click', ()=>{ renderM
 document.getElementById('cardCambios').addEventListener('click', ()=>{ renderCambios(); ir('cambios'); });
 
 // ---------- Marcas ----------
-function marcasAgrupadas(){
+function agrupadas(){
   const m = new Map();
-  for(const p of productos){
-    if(!m.has(p.marca)) m.set(p.marca, []);
-    m.get(p.marca).push(p);
-  }
+  for(const p of productos){ if(!m.has(p.marca)) m.set(p.marca, []); m.get(p.marca).push(p); }
   return [...m.entries()].sort((a,b)=>a[0].localeCompare(b[0],'es'));
 }
 
@@ -609,42 +750,48 @@ function renderMarcas(){
   const q = norm(document.getElementById('qMarca').value);
   const solo = document.getElementById('soloCambios').checked;
   const grid = document.getElementById('brandGrid');
-
-  const items = marcasAgrupadas()
-    .filter(([m,ps]) => (!q || norm(m).includes(q)) && (!solo || ps.some(p=>p.estado)));
+  const items = agrupadas().filter(([m,ps]) => (!q || norm(m).includes(q)) && (!solo || ps.some(p=>p.estado)));
 
   grid.innerHTML = items.map(([m,ps])=>{
     const sel = ps.filter(p=>seleccion.has(p.codigo)).length;
-    const cambios = ps.filter(p=>p.estado==='cambio').length;
-    return `<div class="brand-card ${sel?'has-sel':''}">
-      <div>
-        <div class="name">${esc(m)}</div>
-        <div class="meta">${ps.length} producto${ps.length!==1?'s':''}${cambios?` · <strong style="color:var(--warn)">${cambios} con cambio</strong>`:''}</div>
-        ${sel?`<span class="sel-badge">${sel} seleccionado${sel!==1?'s':''}</span>`:''}
+    const ch = ps.filter(p=>p.estado==='cambio').length;
+    const todo = sel === ps.length;
+    return `<div class="bcard ${sel?'sel':''}">
+      <div class="t">
+        <span class="av">${esc(m.trim().slice(0,2).toUpperCase())}</span>
+        <div style="min-width:0">
+          <div class="nm">${esc(m)}</div>
+          <div class="mt">${ps.length} producto${ps.length!==1?'s':''}${ch?` · <b>${ch} con cambio</b>`:''}</div>
+          ${sel?`<span class="cnt">${sel} elegido${sel!==1?'s':''}</span>`:''}
+        </div>
       </div>
-      <div class="acts">
-        <button class="btn-primary btn-sm" data-all="${esc(m)}">${sel===ps.length?'Quitar marca':'Toda la marca'}</button>
-        <button class="btn-ghost btn-sm" data-pick="${esc(m)}">Elegir productos</button>
+      <div class="ac">
+        <button class="${todo?'b-ghost':'b-primary'} sm" data-all="${esc(m)}">${todo?'Quitar marca':'Toda la marca'}</button>
+        <button class="b-ghost sm" data-pick="${esc(m)}">Elegir productos</button>
       </div>
     </div>`;
-  }).join('') || '<div class="empty">No hay marcas que coincidan.</div>';
+  }).join('') || vacio('No hay marcas que coincidan con la búsqueda.');
 
   grid.querySelectorAll('[data-all]').forEach(b=>b.addEventListener('click', ()=>{
     const m = b.dataset.all, ps = productos.filter(p=>p.marca===m);
-    const todos = ps.every(p=>seleccion.has(p.codigo));
-    ps.forEach(p => todos ? seleccion.delete(p.codigo) : seleccion.add(p.codigo));
-    if(!todos){ ultimoAgregado = `${ps.length} productos de ${m}`; renderMarcas(); actualizarBarra(); mostrarConfirmar(); }
-    else { renderMarcas(); actualizarBarra(); }
+    const todo = ps.every(p=>seleccion.has(p.codigo));
+    ps.forEach(p => todo ? seleccion.delete(p.codigo) : seleccion.add(p.codigo));
+    renderMarcas(); dock();
+    if(!todo){ ultimoAgregado = `Agregaste ${ps.length} producto${ps.length!==1?'s':''} de ${m}.`; confirmar(); }
   }));
   grid.querySelectorAll('[data-pick]').forEach(b=>b.addEventListener('click', ()=>abrirMarca(b.dataset.pick)));
-  actualizarBarra();
+  dock();
+}
+function vacio(txt){
+  return `<div class="none" style="grid-column:1/-1">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <div>${txt}</div></div>`;
 }
 document.getElementById('qMarca').addEventListener('input', renderMarcas);
 document.getElementById('soloCambios').addEventListener('change', renderMarcas);
-document.getElementById('btnLimpiarSel').addEventListener('click', ()=>{ seleccion.clear(); renderMarcas(); actualizarBarra(); });
+document.getElementById('btnLimpiarSel').addEventListener('click', ()=>{ seleccion.clear(); renderMarcas(); dock(); });
 
 // ---------- Productos de una marca ----------
-let tmpSel = new Set();
 function abrirMarca(m){
   marcaActual = m;
   tmpSel = new Set(productos.filter(p=>p.marca===m && seleccion.has(p.codigo)).map(p=>p.codigo));
@@ -653,205 +800,246 @@ function abrirMarca(m){
   renderProductos();
   ir('productos');
 }
-
-function productosDeMarca(){
+function deMarca(){
   const q = norm(document.getElementById('qProd').value);
   return productos.filter(p => p.marca === marcaActual &&
     (!q || norm(p.descripcion).includes(q) || norm(p.codigo).includes(q)));
 }
-
 function renderProductos(){
-  const list = productosDeMarca();
+  const list = deMarca();
   document.getElementById('pSub').textContent = `${list.length} productos · ${tmpSel.size} marcados`;
   document.getElementById('prodList').innerHTML = list.map(p=>`
-    <div class="prow ${tmpSel.has(p.codigo)?'on':''}" data-cod="${esc(p.codigo)}">
+    <div class="row ${tmpSel.has(p.codigo)?'on':''}" data-cod="${esc(p.codigo)}">
       <input type="checkbox" ${tmpSel.has(p.codigo)?'checked':''} tabindex="-1">
-      <div class="desc"><strong>${esc(p.descripcion)}</strong><span>${esc(p.codigo)}</span></div>
-      ${p.estado==='cambio'?`<span class="chg">${money(p.precioAnterior)} →</span>`:''}
-      ${p.estado==='nuevo'?'<span class="pill new">NUEVO</span>':''}
-      <span class="price">${money(p.precio)}</span>
-    </div>`).join('') || '<div class="empty">No hay productos que coincidan.</div>';
+      <div class="tx"><strong>${esc(p.descripcion)}</strong><span>${esc(p.codigo)}</span></div>
+      ${p.estado==='cambio'?`<span class="was">${money(p.precioAnterior)}</span>`:''}
+      ${p.estado==='nuevo'?'<span class="tag new">NUEVO</span>':''}
+      <span class="pr">${money(p.precio)}</span>
+    </div>`).join('') || vacio('No hay productos que coincidan.');
 
-  document.getElementById('prodList').querySelectorAll('.prow').forEach(row=>{
-    row.addEventListener('click', ()=>{
-      const c = row.dataset.cod;
-      tmpSel.has(c) ? tmpSel.delete(c) : tmpSel.add(c);
-      renderProductos();
-    });
-  });
+  document.querySelectorAll('#prodList .row').forEach(row=>row.addEventListener('click', ()=>{
+    const c = row.dataset.cod;
+    tmpSel.has(c) ? tmpSel.delete(c) : tmpSel.add(c);
+    renderProductos();
+  }));
 }
 document.getElementById('qProd').addEventListener('input', renderProductos);
-document.getElementById('btnTodos').addEventListener('click', ()=>{ productosDeMarca().forEach(p=>tmpSel.add(p.codigo)); renderProductos(); });
-document.getElementById('btnNinguno').addEventListener('click', ()=>{ productosDeMarca().forEach(p=>tmpSel.delete(p.codigo)); renderProductos(); });
+document.getElementById('btnTodos').addEventListener('click', ()=>{ deMarca().forEach(p=>tmpSel.add(p.codigo)); renderProductos(); });
+document.getElementById('btnNinguno').addEventListener('click', ()=>{ deMarca().forEach(p=>tmpSel.delete(p.codigo)); renderProductos(); });
 document.getElementById('btnVolverMarcas').addEventListener('click', ()=>{ renderMarcas(); ir('marcas'); });
 
 document.getElementById('btnAgregar').addEventListener('click', ()=>{
+  if(!marcaActual) return ir('confirmar');
   const antes = seleccion.size;
   productos.filter(p=>p.marca===marcaActual).forEach(p=>seleccion.delete(p.codigo));
   tmpSel.forEach(c=>seleccion.add(c));
-  const delta = seleccion.size - antes;
-  ultimoAgregado = delta > 0 ? `Agregaste ${delta} producto${delta!==1?'s':''} de ${marcaActual}.`
-                             : `Actualizaste la selección de ${marcaActual}.`;
-  actualizarBarra();
-  mostrarConfirmar();
+  const d = seleccion.size - antes;
+  ultimoAgregado = d > 0 ? `Agregaste ${d} producto${d!==1?'s':''} de ${marcaActual}.`
+                         : `Actualizaste la selección de ${marcaActual}.`;
+  dock(); confirmar();
 });
 
 // ---------- Confirmar ----------
-function mostrarConfirmar(){
+function confirmar(){
   document.getElementById('cN').textContent = seleccion.size;
-  document.getElementById('cAdded').textContent = typeof ultimoAgregado === 'string' && ultimoAgregado.endsWith('.')
-    ? ultimoAgregado : (ultimoAgregado ? `Agregaste ${ultimoAgregado}.` : '');
+  document.getElementById('cAdded').textContent = ultimoAgregado || '';
   ir('confirmar');
 }
 document.getElementById('btnSeguir').addEventListener('click', ()=>{ renderMarcas(); ir('marcas'); });
 document.getElementById('btnTerminar').addEventListener('click', generar);
-document.getElementById('btnVerSel').addEventListener('click', ()=>{
+document.getElementById('btnVerSel').addEventListener('click', verSeleccion);
+
+function verSeleccion(){
   marcaActual = null;
   const sel = productos.filter(p=>seleccion.has(p.codigo));
   document.getElementById('pTitle').textContent = 'Selección completa';
   document.getElementById('pSub').textContent = `${sel.length} productos elegidos`;
   document.getElementById('prodList').innerHTML = sel.map(p=>`
-    <div class="prow on"><div class="desc"><strong>${esc(p.descripcion)}</strong>
-    <span>${esc(p.marca)} · ${esc(p.codigo)}</span></div>
-    <span class="price">${money(p.precio)}</span>
-    <button class="btn-ghost btn-sm" data-del="${esc(p.codigo)}">Quitar</button></div>`).join('')
-    || '<div class="empty">La selección está vacía.</div>';
-  document.getElementById('prodList').querySelectorAll('[data-del]').forEach(b=>{
-    b.addEventListener('click', e=>{ e.stopPropagation(); seleccion.delete(b.dataset.del); actualizarBarra(); document.getElementById('btnVerSel').click(); });
-  });
+    <div class="row on">
+      <div class="tx"><strong>${esc(p.descripcion)}</strong><span>${esc(p.marca)} · ${esc(p.codigo)}</span></div>
+      <span class="pr">${money(p.precio)}</span>
+      <button class="b-ghost sm" data-del="${esc(p.codigo)}">Quitar</button>
+    </div>`).join('') || vacio('La selección está vacía.');
+  document.querySelectorAll('#prodList [data-del]').forEach(b=>b.addEventListener('click', e=>{
+    e.stopPropagation(); seleccion.delete(b.dataset.del); dock(); verSeleccion();
+  }));
   ir('productos');
-});
-
-// ---------- Barra ----------
-function actualizarBarra(){
-  document.getElementById('barN').textContent = seleccion.size;
-  const v = document.querySelector('.view.active')?.id.replace('v-','');
-  document.getElementById('bar').classList.toggle('show', ['marcas','productos','cambios'].includes(v) && seleccion.size > 0);
 }
-document.getElementById('barClear').addEventListener('click', ()=>{
-  seleccion.clear(); actualizarBarra();
+
+// ---------- Dock ----------
+function dock(){
+  document.getElementById('dockN').textContent = seleccion.size;
+  const v = document.querySelector('.view.active')?.id.replace('v-','');
+  document.getElementById('dock').classList.toggle('up', ['marcas','productos','cambios'].includes(v) && seleccion.size > 0);
+}
+document.getElementById('dockClear').addEventListener('click', ()=>{
+  seleccion.clear(); dock();
   const v = document.querySelector('.view.active').id;
   if(v === 'v-marcas') renderMarcas();
-  if(v === 'v-productos' && marcaActual) { tmpSel.clear(); renderProductos(); }
+  if(v === 'v-productos'){ tmpSel.clear(); marcaActual ? renderProductos() : verSeleccion(); }
 });
-document.getElementById('barGo').addEventListener('click', generar);
+document.getElementById('dockGo').addEventListener('click', generar);
 
-// ---------- Cambios de precio ----------
+// ---------- Cambios ----------
 function renderCambios(){
   const c = window.__cmp;
-  const sub = document.getElementById('cmpSub');
-  const stats = document.getElementById('cmpStats');
-  const tabla = document.getElementById('cmpTable');
-
+  const sub = document.getElementById('cmpSub'), kpis = document.getElementById('cmpKpis'), tb = document.getElementById('cmpTable');
   if(!c){
     sub.textContent = 'Todavía no hay una lista anterior guardada para comparar.';
-    stats.innerHTML = '';
-    tabla.innerHTML = `<div class="empty">Guardá esta lista como base y la próxima vez que bajes precios de Chess
-      te muestro exactamente qué cambió.<br><br>
-      <button class="btn-primary" onclick="document.getElementById('btnGuardarBase').click()">Guardar esta lista como base</button></div>`;
+    kpis.innerHTML = '';
+    tb.innerHTML = `<div class="none">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h6v6"/></svg>
+      <div style="margin-bottom:18px">Guardá esta lista como base y la próxima vez que bajes precios<br>te muestro exactamente qué cambió.</div>
+      <button class="b-primary" onclick="document.getElementById('btnGuardarBase').click()">Guardar esta lista como base</button></div>`;
     return;
   }
   sub.textContent = `Comparado contra la lista guardada el ${new Date(c.fecha).toLocaleString('es-AR')}.`;
   const cambios = productos.filter(p=>p.estado==='cambio');
   const subas = cambios.filter(p=>p.precio > p.precioAnterior).length;
-
-  stats.innerHTML = `
-    <div class="stat up"><div class="v">${c.ch}</div><div class="l">Precios cambiados</div></div>
-    <div class="stat"><div class="v">${subas}</div><div class="l">Subieron</div></div>
-    <div class="stat"><div class="v">${c.ch - subas}</div><div class="l">Bajaron</div></div>
-    <div class="stat new"><div class="v">${c.nu}</div><div class="l">Productos nuevos</div></div>`;
+  kpis.innerHTML = `
+    <div class="kpi up"><div class="v">${c.ch}</div><div class="k">Precios cambiados</div></div>
+    <div class="kpi up"><div class="v">${subas}</div><div class="k">Subieron</div></div>
+    <div class="kpi dn"><div class="v">${c.ch - subas}</div><div class="k">Bajaron</div></div>
+    <div class="kpi dn"><div class="v">${c.nu}</div><div class="k">Productos nuevos</div></div>`;
 
   const filas = productos.filter(p=>p.estado).sort((a,b)=>{
     const da = a.precioAnterior ? Math.abs(a.precio/a.precioAnterior-1) : 9;
     const db = b.precioAnterior ? Math.abs(b.precio/b.precioAnterior-1) : 9;
     return db - da;
   });
-
-  tabla.innerHTML = `<table><thead><tr>
-      <th>Código</th><th>Descripción</th><th>Marca</th><th class="num">Precio</th><th class="num">Var.</th><th></th>
+  tb.innerHTML = `<table><thead><tr>
+      <th>Código</th><th>Descripción</th><th>Marca</th><th class="n">Precio</th><th class="n">Var.</th><th></th>
     </tr></thead><tbody>${filas.map(p=>{
       const v = p.precioAnterior ? (p.precio/p.precioAnterior-1)*100 : null;
       return `<tr>
-        <td>${esc(p.codigo)}</td><td>${esc(p.descripcion)}</td><td>${esc(p.marca)}</td>
-        <td class="num">${p.precioAnterior!=null?`<span class="old">${money(p.precioAnterior)}</span>`:''}<strong>${money(p.precio)}</strong></td>
-        <td class="num">${v!=null?`<span style="color:${v>0?'var(--warn)':'var(--ok)'};font-weight:700">${v>0?'+':''}${v.toFixed(1)}%</span>`:'—'}</td>
-        <td>${p.estado==='cambio'?'<span class="pill up">CAMBIÓ</span>':'<span class="pill new">NUEVO</span>'}</td>
-      </tr>`;}).join('') || '<tr><td colspan="6" class="empty">Ningún precio cambió.</td></tr>'}</tbody></table>`;
+        <td style="font-variant-numeric:tabular-nums">${esc(p.codigo)}</td>
+        <td>${esc(p.descripcion)}</td><td>${esc(p.marca)}</td>
+        <td class="n">${p.precioAnterior!=null?`<span class="was">${money(p.precioAnterior)}</span>`:''}<strong>${money(p.precio)}</strong></td>
+        <td class="n">${v!=null?`<span style="color:${v>0?'var(--up)':'var(--down)'};font-weight:700">${v>0?'+':''}${v.toFixed(1)}%</span>`:'—'}</td>
+        <td>${p.estado==='cambio'?'<span class="tag up">CAMBIÓ</span>':'<span class="tag new">NUEVO</span>'}</td>
+      </tr>`;}).join('') || '<tr><td colspan="6" class="none">Ningún precio cambió.</td></tr>'}</tbody></table>`;
 }
 
 document.getElementById('btnSelCambios').addEventListener('click', ()=>{
   const ch = productos.filter(p=>p.estado==='cambio');
+  if(!ch.length) return alert('No hay productos con cambio de precio.');
   ch.forEach(p=>seleccion.add(p.codigo));
   ultimoAgregado = `Agregaste ${ch.length} productos con cambio de precio.`;
-  actualizarBarra();
-  mostrarConfirmar();
+  dock(); confirmar();
 });
 document.getElementById('btnGuardarBase').addEventListener('click', ()=>{
   localStorage.setItem(KEY_BASE, JSON.stringify({
     savedAt: new Date().toISOString(),
     items: productos.map(p=>({codigo:p.codigo, precio:p.precio}))
   }));
-  comparar();
-  renderCambios();
+  comparar(); renderCambios();
   alert('Lista base guardada. La próxima vez que cargues precios de Chess te muestro qué cambió contra esta.');
 });
 
-// ---------- Etiquetas ----------
+// ---------- Etiquetas (impresión láser blanco y negro) ----------
 function generar(){
   const sel = productos.filter(p=>seleccion.has(p.codigo))
     .sort((a,b)=> a.marca.localeCompare(b.marca,'es') || a.descripcion.localeCompare(b.descripcion,'es'));
   if(!sel.length) return alert('Todavía no seleccionaste ningún producto.');
   window.__labels = sel;
-  document.getElementById('etSub').textContent =
-    `${sel.length} etiquetas · ${new Set(sel.map(p=>p.marca)).size} marcas. Se imprimen en A4; cortá por las líneas de puntos.`;
   pintarEtiquetas();
+  resumenHojas();
   ir('etiquetas');
+}
+
+// A4 = 210 x 297 mm, con 7mm de margen por lado. Las etiquetas llenan la hoja exacta y
+// van pegadas entre si, para poder cortar de lado a lado con la guillotina.
+const A4 = {ancho:210, alto:297, margen:7};
+function medidas(){
+  const cols = +document.getElementById('oCols').value;
+  const filas = +document.getElementById('oRows').value;
+  return {
+    cols, filas,
+    anchoMm: (A4.ancho - A4.margen*2) / cols,
+    altoMm:  (A4.alto  - A4.margen*2) / filas,
+    porHoja: cols * filas,
+  };
+}
+function resumenHojas(){
+  const n = (window.__labels || []).length;
+  if(!n) return;
+  const m = medidas();
+  const hojas = Math.ceil(n / m.porHoja);
+  const marcas = new Set(window.__labels.map(p=>p.marca)).size;
+  document.getElementById('etSub').textContent =
+    `${n} etiquetas · ${marcas} marca${marcas!==1?'s':''} · ${hojas} hoja${hojas!==1?'s':''} A4 ` +
+    `(${m.porHoja} por hoja, de ${m.anchoMm.toFixed(0)} × ${m.altoMm.toFixed(0)} mm). ` +
+    `Se imprimen en negro y van pegadas: cortás de lado a lado.`;
 }
 
 function pintarEtiquetas(){
   const conCod = document.getElementById('oCod').checked;
   const conLogo = document.getElementById('oLogo').checked;
-  document.getElementById('labels').innerHTML = (window.__labels||[]).map(p=>{
+  const marca = logoReal
+    ? `<img src="${logoReal}" alt="Tumalac">`
+    : `<svg viewBox="0 0 132 132"><use href="#isoBN"/></svg><span>TUMALAC</span>`;
+
+  const lista = window.__labels || [];
+  const html = lista.map(p=>{
     const [i,d] = partes(p.precio);
-    const foot = (conCod || conLogo) ? `<div class="foot">
-        ${conCod?`<span class="cod">${esc(p.codigo)}</span>`:''}
-        ${conLogo?`<svg class="mk" viewBox="0 0 132 132"><use href="#iso"/></svg><span class="nm">TUMALAC</span>`:''}
+    const ft = (conCod || conLogo) ? `<div class="ft">
+        ${conCod?`<span class="cd">${esc(p.codigo)}</span>`:''}
+        ${conLogo?`<span class="mk">${marca}</span>`:''}
       </div>` : '';
     return `<div class="lbl">
-      <div class="bar"></div>
-      <div class="body">
+      <div class="rule"></div>
+      <div class="in">
         <div class="d">${esc(p.descripcion)}</div>
-        <div class="p"><span class="cur">$</span><span class="int">${i}</span><span class="dec">${d}</span></div>
-      </div>
-      ${foot}
+        <div class="pz"><span class="cu">$</span><span class="en">${i}</span><span class="ce">${d}</span></div>
+      </div>${ft}
     </div>`;
-  }).join('');
-}
+  });
 
-function estiloEtiquetas(){
+  // Completa la última fila con celdas vacías: así las líneas de corte llegan
+  // hasta el borde de la hoja y se puede cortar derecho de lado a lado.
+  const m = medidas();
+  const resto = lista.length % m.cols;
+  if(resto) for(let k = resto; k < m.cols; k++) html.push('<div class="lbl vacia"></div>');
+
+  document.getElementById('labels').innerHTML = html.join('');
+}
+function estilo(){
   const g = document.getElementById('labels');
-  g.style.setProperty('--cols', document.getElementById('oCols').value);
-  g.style.setProperty('--lh', document.getElementById('oH').value + 'mm');
+  const m = medidas();
+  g.style.setProperty('--cols', m.cols);
+  g.style.setProperty('--lh', m.altoMm.toFixed(2) + 'mm');
   g.style.setProperty('--ps', document.getElementById('oP').value + 'px');
   g.style.setProperty('--ds', document.getElementById('oD').value + 'px');
 }
-['oCols','oH','oP','oD'].forEach(id=>document.getElementById(id).addEventListener('input', estiloEtiquetas));
+['oCols','oRows'].forEach(id=>document.getElementById(id).addEventListener('input', ()=>{ estilo(); pintarEtiquetas(); resumenHojas(); }));
+['oP','oD'].forEach(id=>document.getElementById(id).addEventListener('input', ()=>{ estilo(); resumenHojas(); }));
 ['oCod','oLogo'].forEach(id=>document.getElementById(id).addEventListener('change', pintarEtiquetas));
 document.getElementById('btnPrint').addEventListener('click', ()=>window.print());
 document.getElementById('btnVolverSel').addEventListener('click', ()=>{ renderMarcas(); ir('marcas'); });
-estiloEtiquetas();
+estilo();
 
-// ---------- Logo propio si existe logo.png ----------
+// ---------- Logo original de la empresa ----------
+// Si dejás el archivo del logo en esta carpeta, se usa TAL CUAL, sin modificarlo.
+// Se prueban estos nombres en orden; el primero que exista, gana.
 (function(){
-  const img = new Image();
-  img.onload = ()=>{
-    document.querySelectorAll('#brandSlot, .biglogo').forEach(el=>{
-      const h = el.id === 'brandSlot' ? 38 : 88;
-      el.innerHTML = `<img src="logo.png" alt="Tumalac Distribuidora" style="height:${h}px">`;
-    });
-  };
-  img.src = 'logo.png';
+  const candidatos = ['logo.png','logo.jpg','logo.jpeg','logo.webp','logo-real.svg'];
+  (function probar(i){
+    if(i >= candidatos.length) return;
+    const img = new Image();
+    img.onload = ()=>{
+      logoReal = candidatos[i];
+      document.getElementById('brandBtn').innerHTML =
+        `<img src="${logoReal}" alt="Tumalac Distribuidora" style="height:40px;width:auto;display:block">`;
+      document.querySelector('.hero .lg').innerHTML =
+        `<img src="${logoReal}" alt="Tumalac Distribuidora" style="height:92px;width:auto;margin:0 auto;display:block">`;
+      pintarEtiquetas();
+    };
+    img.onerror = ()=>probar(i+1);
+    img.src = candidatos[i];
+  })(0);
 })();
+
+ir('inicio');
 </script>
 </body>
 </html>

@@ -5,6 +5,39 @@ Lo más nuevo va arriba.
 
 ---
 
+## 2026-09-02 · Logo real, diseño profesional y etiquetas para impresora láser
+
+**Logo original de la empresa**
+
+- Se colocó el archivo real (`web/logo.png`, 1600×481), traído del Drive de Nico y usado
+  **tal cual, sin modificarlo ni recortarlo**. Aparece en el encabezado, en la pantalla
+  de inicio y en cada etiqueta.
+- **Tocando el logo se vuelve al inicio** desde cualquier pantalla, sin perder la lista
+  cargada ni la selección de productos.
+- Si el archivo faltara, el sistema cae en un logo reconstruido (`web/logo.svg`) y sigue
+  funcionando. También acepta `logo.jpg`, `logo.jpeg` y `logo.webp`.
+
+**Diseño**
+
+- Interfaz rehecha: encabezado translúcido fijo, indicador de pasos (Lista → Productos →
+  Etiquetas), tarjetas con elevación y hover, tipografía más ajustada, iconografía
+  propia, transiciones suaves y estados vacíos cuidados.
+- La barra de selección pasó a ser una píldora flotante en el centro inferior.
+- Tarjetas de marca con inicial, conteo de productos y de cambios de precio.
+
+**Etiquetas: impresora láser blanco y negro, hoja A4**
+
+- Todo el color salió de la etiqueta: se imprime en **negro puro**, sin depender de la
+  tinta de color. Barra negra superior, descripción en negrita, precio grande.
+- Las etiquetas **llenan la hoja A4 exacta**: se elige *columnas* y *filas por hoja* y el
+  alto se calcula solo (ej. 3 × 6 = 18 etiquetas de 65 × 47 mm).
+- Van **pegadas entre sí**, con las líneas de corte continuas de lado a lado, para cortar
+  derecho con la guillotina. La última fila se completa con celdas vacías para que las
+  líneas lleguen al borde.
+- El sistema avisa cuántas hojas A4 van a salir antes de imprimir.
+
+---
+
 ## 2026-09-02 · Rediseño con identidad Tumalac y flujo por pantallas
 
 **Diseño**
@@ -72,4 +105,3 @@ Lo más nuevo va arriba.
   correcto pero sin verificar: el entorno donde se desarrolló no tiene acceso de red a
   `magio.chesserp.com`. Si algún texto de botón no coincide, se calibra con
   `npm run calibrar` y se actualiza `config.json`.
-- Reemplazar `web/logo.svg` por el archivo original del logo si aparece.

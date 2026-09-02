@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 150" role="img" aria-label="Tumalac Distribuidora">
   <title>Tumalac Distribuidora</title>
-  <!-- Isotipo: cuadrilatero inclinado bicolor con la T en negativo -->
-  <g transform="translate(4,8) rotate(-11 66 66)">
-    <path d="M14 16 L118 16 L118 116 L14 116 Z" fill="#3D4142"/>
-    <path d="M72 16 L118 16 L118 116 L38 116 Z" fill="#4A9E92"/>
-    <path d="M28 31 L104 31 L104 53 L75 53 L75 103 L53 103 L53 53 L28 53 Z" fill="#FFFFFF"/>
+  <!-- Isotipo: cuadrilatero inclinado partido en dos (gris + verde) con la T en negativo -->
+  <g transform="translate(2,6) rotate(-14 68 66)">
+    <path d="M16 20 L122 20 L122 112 L16 112 Z" fill="#3A3F40"/>
+    <path d="M84 20 L122 20 L122 112 L40 112 Z" fill="#4A9B8E" stroke="#FFFFFF" stroke-width="4.5"/>
+    <path d="M30 33 L108 33 L108 55 L79 55 L79 101 L57 101 L57 55 L30 55 Z" fill="#FFFFFF"/>
   </g>
   <!-- Logotipo -->
   <text x="152" y="78" font-family="Verdana, Geneva, DejaVu Sans, sans-serif" font-size="62"
-        font-weight="600" letter-spacing="1.5" fill="#3D4142">TUMALAC</text>
+        font-weight="600" letter-spacing="1.5" fill="#3A3F40">TUMALAC</text>
   <text x="156" y="114" font-family="Verdana, Geneva, DejaVu Sans, sans-serif" font-size="25"
         font-weight="400" letter-spacing="7.4" fill="#6E7677">DISTRIBUIDORA</text>
 </svg>

@@ -45,16 +45,27 @@ Excel (para que funcione sin internet) y los datos que deja el agente.
    - **Elegir productos** — abrís la lista y marcás de a uno.
 4. **¿Seguir agregando?** — después de cada agregado el sistema te pregunta si sumás
    otra marca o pasás a imprimir, y te muestra el total acumulado.
-5. **Etiquetas** — la hoja lista. Ajustás columnas, alto, tamaños, y si querés el código
-   y el logo. Imprimís en A4 y cortás por las líneas de puntos.
+5. **Etiquetas** — la hoja lista. Elegís columnas y filas por hoja, y el sistema te dice
+   cuántas hojas A4 van a salir antes de imprimir.
+
+Tocando el **logo** volvés al inicio desde cualquier pantalla, sin perder la lista ni la
+selección.
+
+### Impresión
+
+- Sale en **A4** y en **negro puro**, pensado para la impresora láser: la etiqueta no
+  depende del color para leerse.
+- Las etiquetas **llenan la hoja exacta y van pegadas**, con las líneas de corte
+  continuas de lado a lado, para cortar derecho con la guillotina. Por defecto 3 × 6 =
+  18 etiquetas por hoja, de 65 × 47 mm.
 
 ### Reglas automáticas
 
 - Los artículos con **precio $0 nunca se imprimen**: no tienen precio de lista cargado
   en Chess y una etiqueta en $0 en la góndola es un error de cara al cliente.
-- El **logo Tumalac** va en el encabezado y en cada etiqueta. Está reconstruido en
-  `web/logo.svg`; si dejás el archivo original como `web/logo.png`, el sistema lo usa
-  automáticamente en su lugar.
+- El **logo original de la empresa** está en `web/logo.png` y se usa tal cual, sin
+  modificar, en el encabezado, el inicio y cada etiqueta. Si querés cambiarlo, reemplazá
+  ese archivo (también acepta `logo.jpg` / `logo.webp`).
 
 ### Cómo detecta los cambios de precio
 
