@@ -46,7 +46,8 @@ Excel (para que funcione sin internet) y los datos que deja el agente.
 4. **¿Seguir agregando?** — después de cada agregado el sistema te pregunta si sumás
    otra marca o pasás a imprimir, y te muestra el total acumulado.
 5. **Etiquetas** — la hoja lista. Elegís columnas y filas por hoja, y el sistema te dice
-   cuántas hojas A4 van a salir antes de imprimir.
+   cuántas hojas A4 van a salir antes de imprimir. Con **Vista previa** podés ver una
+   etiqueta a tamaño real antes de imprimir todo el lote.
 
 Tocando el **logo** volvés al inicio desde cualquier pantalla, sin perder la lista ni la
 selección.
@@ -63,6 +64,8 @@ selección.
 
 - Los artículos con **precio $0 nunca se imprimen**: no tienen precio de lista cargado
   en Chess y una etiqueta en $0 en la góndola es un error de cara al cliente.
+- El código de Chess se imprime como **código de barras real (EAN-13)** cuando es
+  válido; si no lo es, se imprime el número tal cual, en texto.
 - El **logo original de la empresa** está en `web/logo.png` y se usa tal cual, sin
   modificar, en el encabezado, el inicio y cada etiqueta. Si querés cambiarlo, reemplazá
   ese archivo (también acepta `logo.jpg` / `logo.webp`).

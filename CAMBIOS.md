@@ -5,6 +5,28 @@ Lo más nuevo va arriba.
 
 ---
 
+## 2026-09-03 · Código de barras real y vista previa a tamaño real
+
+**Código de barras EAN-13**
+
+- La etiqueta ahora imprime el código de Chess como **código de barras escaneable**
+  (EAN-13 / UPC-A), no solo como número. Se genera en el navegador con un encoder
+  propio (sin librerías externas), validando el dígito verificador antes de dibujarlo.
+- Si el código no es un EAN-13/UPC-A válido (por ejemplo un SKU interno corto), la
+  etiqueta cae automáticamente al número en texto plano, como antes — nunca se
+  imprime una barra que no vaya a escanear bien.
+
+**Vista previa a tamaño real**
+
+- Nuevo botón **Vista previa** en la pantalla de etiquetas: muestra una sola etiqueta
+  ampliada, a su tamaño físico aproximado (en mm reales, no una miniatura), para
+  revisar que el texto no se corte y el precio entre bien antes de gastar una hoja
+  entera imprimiendo.
+- Se actualiza en vivo si se cambian columnas, filas por hoja o tamaños mientras está
+  abierta.
+
+---
+
 ## 2026-09-02 · Logo real, diseño profesional y etiquetas para impresora láser
 
 **Logo original de la empresa**

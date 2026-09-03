@@ -311,10 +311,31 @@
     border-top:1px solid #D8DEDE;min-height:0;
   }
   .lbl .ft .cd{font-size:10px;color:#3A4041;letter-spacing:.05em;font-variant-numeric:tabular-nums;font-weight:600}
-  .lbl .ft .mk{margin-left:auto;display:flex;align-items:center;gap:5px}
+  .lbl .ft .bcwrap{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;max-width:68%}
+  .lbl .ft .bcwrap svg{width:100%;display:block}
+  .lbl .ft .bcnum{font-size:7.6px;color:#3A4041;letter-spacing:.05em;font-variant-numeric:tabular-nums;font-weight:600}
+  .lbl .ft .mk{margin-left:auto;display:flex;align-items:center;gap:5px;flex:none}
   .lbl .ft .mk svg{height:13px;width:13px}
   .lbl .ft .mk img{height:23px;width:auto}   /* logo original de la empresa, sin recortar */
   .lbl .ft .mk span{font-size:8.5px;font-weight:800;color:#000;letter-spacing:.1em}
+
+  /* ---------- Vista previa a tamaño real ---------- */
+  .preview-overlay{
+    position:fixed;inset:0;z-index:90;background:rgba(31,41,42,.5);
+    display:flex;align-items:center;justify-content:center;padding:24px;
+  }
+  .preview-card{
+    background:#fff;border-radius:var(--r-lg);box-shadow:var(--e3);
+    padding:22px;max-width:92vw;max-height:92vh;overflow:auto;
+  }
+  .preview-head{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+  .preview-head strong{font-size:15px;letter-spacing:-.2px}
+  .preview-head span{color:var(--ink-3);font-size:12.5px;margin-right:auto}
+  .preview-stage{
+    display:flex;justify-content:center;align-items:center;
+    background:var(--surface-2);padding:36px;border-radius:12px;
+  }
+  .preview-stage .lbl{border:1px dashed #9AA2A2;flex:none}
 
   @media print{
     .topbar,.dock,.no-print{display:none!important}
@@ -548,6 +569,7 @@
       <label class="chk"><input type="checkbox" id="oLogo" checked> Logo</label>
       <span style="margin-left:auto;display:flex;gap:11px">
         <button class="b-ghost" id="btnVolverSel">Cambiar selección</button>
+        <button class="b-ghost" id="btnPreview">Vista previa</button>
         <button class="b-dark" id="btnPrint">Imprimir</button>
       </span>
     </div>
@@ -561,6 +583,17 @@
   <span class="n"><b id="dockN">0</b> seleccionados</span>
   <button class="x" id="dockClear">Vaciar</button>
   <button class="b-primary sm" id="dockGo">Generar etiquetas</button>
+</div>
+
+<div class="preview-overlay no-print" id="previewOverlay" style="display:none">
+  <div class="preview-card">
+    <div class="preview-head">
+      <strong>Vista previa</strong>
+      <span>Tamaño aproximado en pantalla — el real sale al imprimir</span>
+      <button class="b-ghost sm" id="btnClosePreview">Cerrar</button>
+    </div>
+    <div class="preview-stage" id="previewStage"></div>
+  </div>
 </div>
 
 <script>
@@ -972,28 +1005,74 @@ function resumenHojas(){
     `Se imprimen en negro y van pegadas: cortás de lado a lado.`;
 }
 
-function pintarEtiquetas(){
-  const conCod = document.getElementById('oCod').checked;
-  const conLogo = document.getElementById('oLogo').checked;
+// ---------- Código de barras EAN-13 ----------
+// Se dibuja como SVG (sin librerías externas) sobre el código de Chess, cuando ese
+// código es un EAN-13 (o UPC-A de 12 dígitos) válido. Si no lo es, se muestra el
+// número tal cual, como antes.
+const EAN_L = ['0001101','0011001','0010011','0111101','0100011','0110001','0101111','0111011','0110111','0001011'];
+const EAN_G = ['0100111','0110011','0011011','0100001','0011101','0111001','0000101','0010001','0001001','0010111'];
+const EAN_R = ['1110010','1100110','1101100','1000010','1011100','1001110','1010000','1000100','1001000','1110100'];
+const EAN_PARITY = ['LLLLLL','LLGLGG','LLGGLG','LLGGGL','LGLLGG','LGGLLG','LGGGLL','LGLGLG','LGLGGL','LGGLGL'];
+
+function ean13Digits(codigoRaw){
+  const d = String(codigoRaw||'').replace(/\D/g,'');
+  if(d.length === 13) return d;
+  if(d.length === 12) return '0' + d;   // UPC-A -> EAN-13 con cero adelante
+  return null;
+}
+function ean13Valido(d){
+  if(!d) return false;
+  let sum = 0;
+  for(let i=0;i<12;i++) sum += (+d[i]) * (i%2===0 ? 1 : 3);
+  return (10 - sum%10) % 10 === +d[12];
+}
+function ean13Modulos(d){
+  const parity = EAN_PARITY[+d[0]];
+  let m = '101';
+  for(let i=0;i<6;i++) m += (parity[i]==='L' ? EAN_L : EAN_G)[+d[i+1]];
+  m += '01010';
+  for(let i=0;i<6;i++) m += EAN_R[+d[i+7]];
+  return m + '101';
+}
+function barcodeSvg(codigoRaw){
+  const d = ean13Digits(codigoRaw);
+  if(!d || !ean13Valido(d)) return null;
+  const mod = ean13Modulos(d);
+  let bars = '';
+  for(let i=0;i<mod.length;i++) if(mod[i]==='1') bars += `<rect x="${i}" y="0" width="1" height="26"/>`;
+  return `<svg viewBox="0 0 ${mod.length} 26" preserveAspectRatio="none" style="height:22px;fill:#000">${bars}</svg>`;
+}
+
+// ---------- Armado de cada etiqueta ----------
+function labelHtml(p, conCod, conLogo){
+  const [i,d] = partes(p.precio);
   const marca = logoReal
     ? `<img src="${logoReal}" alt="Tumalac">`
     : `<svg viewBox="0 0 132 132"><use href="#isoBN"/></svg><span>TUMALAC</span>`;
 
+  let ident = '';
+  if(conCod){
+    const bc = barcodeSvg(p.codigo);
+    ident = bc
+      ? `<div class="bcwrap">${bc}<span class="bcnum">${esc(p.codigo)}</span></div>`
+      : `<span class="cd">${esc(p.codigo)}</span>`;
+  }
+  const ft = (conCod || conLogo) ? `<div class="ft">${ident}${conLogo?`<span class="mk">${marca}</span>`:''}</div>` : '';
+
+  return `<div class="lbl">
+    <div class="rule"></div>
+    <div class="in">
+      <div class="d">${esc(p.descripcion)}</div>
+      <div class="pz"><span class="cu">$</span><span class="en">${i}</span><span class="ce">${d}</span></div>
+    </div>${ft}
+  </div>`;
+}
+
+function pintarEtiquetas(){
+  const conCod = document.getElementById('oCod').checked;
+  const conLogo = document.getElementById('oLogo').checked;
   const lista = window.__labels || [];
-  const html = lista.map(p=>{
-    const [i,d] = partes(p.precio);
-    const ft = (conCod || conLogo) ? `<div class="ft">
-        ${conCod?`<span class="cd">${esc(p.codigo)}</span>`:''}
-        ${conLogo?`<span class="mk">${marca}</span>`:''}
-      </div>` : '';
-    return `<div class="lbl">
-      <div class="rule"></div>
-      <div class="in">
-        <div class="d">${esc(p.descripcion)}</div>
-        <div class="pz"><span class="cu">$</span><span class="en">${i}</span><span class="ce">${d}</span></div>
-      </div>${ft}
-    </div>`;
-  });
+  const html = lista.map(p => labelHtml(p, conCod, conLogo));
 
   // Completa la última fila con celdas vacías: así las líneas de corte llegan
   // hasta el borde de la hoja y se puede cortar derecho de lado a lado.
@@ -1002,7 +1081,42 @@ function pintarEtiquetas(){
   if(resto) for(let k = resto; k < m.cols; k++) html.push('<div class="lbl vacia"></div>');
 
   document.getElementById('labels').innerHTML = html.join('');
+  if(document.getElementById('previewOverlay').style.display !== 'none') renderPreview();
 }
+
+// ---------- Vista previa a tamaño real ----------
+// Aproximado: el navegador no siempre respeta el mm físico en pantalla, pero sirve
+// para chequear el diseño (texto cortado, precio que no entra) antes de gastar hojas.
+const mmToPx = mm => mm * (96/25.4);
+
+function renderPreview(){
+  const lista = window.__labels || [];
+  if(!lista.length) return;
+  const m = medidas();
+  const conCod = document.getElementById('oCod').checked;
+  const conLogo = document.getElementById('oLogo').checked;
+  const stage = document.getElementById('previewStage');
+  stage.innerHTML = labelHtml(lista[0], conCod, conLogo);
+  const lbl = stage.querySelector('.lbl');
+  lbl.style.width = mmToPx(m.anchoMm) + 'px';
+  lbl.style.height = mmToPx(m.altoMm) + 'px';
+  lbl.style.setProperty('--ps', document.getElementById('oP').value + 'px');
+  lbl.style.setProperty('--ds', document.getElementById('oD').value + 'px');
+}
+document.getElementById('btnPreview').addEventListener('click', ()=>{
+  if(!(window.__labels||[]).length) return alert('Generá etiquetas primero.');
+  renderPreview();
+  document.getElementById('previewOverlay').style.display = 'flex';
+});
+document.getElementById('btnClosePreview').addEventListener('click', ()=>{
+  document.getElementById('previewOverlay').style.display = 'none';
+});
+document.getElementById('previewOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'previewOverlay') document.getElementById('previewOverlay').style.display = 'none';
+});
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape') document.getElementById('previewOverlay').style.display = 'none';
+});
 function estilo(){
   const g = document.getElementById('labels');
   const m = medidas();
@@ -1010,6 +1124,7 @@ function estilo(){
   g.style.setProperty('--lh', m.altoMm.toFixed(2) + 'mm');
   g.style.setProperty('--ps', document.getElementById('oP').value + 'px');
   g.style.setProperty('--ds', document.getElementById('oD').value + 'px');
+  if(document.getElementById('previewOverlay').style.display !== 'none') renderPreview();
 }
 ['oCols','oRows'].forEach(id=>document.getElementById(id).addEventListener('input', ()=>{ estilo(); pintarEtiquetas(); resumenHojas(); }));
 ['oP','oD'].forEach(id=>document.getElementById(id).addEventListener('input', ()=>{ estilo(); resumenHojas(); }));
