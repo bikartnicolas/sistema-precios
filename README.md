@@ -80,14 +80,33 @@ Excel (para que funcione sin internet) y los datos que deja el agente.
 Tocando el **logo** volvés al inicio desde cualquier pantalla, sin perder la lista ni la
 selección.
 
+### La etiqueta
+
+Reproduce la etiqueta que ya se usa en la góndola: **90 × 40 mm**, marco negro completo
+y tres franjas separadas por líneas.
+
+```
+┌──────────────────────────────────────┐
+│ CHIPS C/CHOC (14U X 120GR) TOS…      │  1 cm — descripción
+├──────────────────────────────────────┤
+│              $765,10                 │  2,5 cm — precio
+├──────────────────────────────────────┤
+│ Cod: 429039   PRECIO FINAL   7798…38 │  0,5 cm — códigos
+└──────────────────────────────────────┘
+```
+
+- **Descripción** en MAYÚSCULAS, una sola línea, cortada con `…` si no entra.
+- **Precio** grande y centrado, `$` pegado al número y centavos del mismo tamaño.
+- **Pie en tres partes**: código de Chess, `PRECIO FINAL` y el código de barras.
+
 ### Impresión
 
 - Sale en **A4** y en **negro puro**, pensado para la impresora láser: la etiqueta no
   depende del color para leerse.
-- Las etiquetas **llenan la hoja exacta y van pegadas**, con las líneas de corte
-  continuas de lado a lado, para cortar derecho con la guillotina.
-- **Formatos** (un solo selector, con las medidas reales): Grande 98 × 70 mm, Mediana
-  65 × 57, Estándar 65 × 47 (18 por hoja), Chica 49 × 40 y Mínima 49 × 35.
+- Las etiquetas **van pegadas entre sí**, con las líneas de corte continuas de lado a
+  lado, para cortar derecho con la guillotina.
+- Entran **14 por hoja** (2 columnas × 7 filas) en el formato de góndola 90 × 40 mm.
+  El selector también trae 98 × 47, 65 × 35 y 45 × 30 mm por si hace falta otra medida.
 - **Copias** de 1 a 4 por producto, para los que van en más de un lugar de la góndola.
 
 ### Reglas automáticas
@@ -96,9 +115,9 @@ selección.
   en Chess y una etiqueta en $0 en la góndola es un error de cara al cliente.
 - El código de Chess se imprime como **código de barras real (EAN-13)** cuando es
   válido; si no lo es, se imprime el número tal cual, en texto.
-- **El texto se ajusta solo**: la descripción usa todo el alto disponible y se achica lo
-  justo para entrar completa; el precio se achica si el número es muy largo. Si aun así
-  alguna descripción no entra, el sistema lo avisa y sugiere un formato más grande.
+- **El precio se ajusta solo** si el número es muy largo, para no pasarse del ancho.
+  Si alguna descripción no entra completa, el sistema **avisa cuántas se cortaron** con
+  `…` y sugiere bajar el tamaño del texto o usar un formato más ancho.
 - En los productos que **bajaron** de precio se imprime el **precio anterior tachado**
   (se puede desactivar). Opcionalmente también la **fecha** de impresión.
 - El **logo original de la empresa** está en `web/logo.png` y se usa tal cual, sin

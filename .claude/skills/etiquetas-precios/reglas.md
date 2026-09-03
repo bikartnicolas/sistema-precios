@@ -27,13 +27,31 @@ Si la descripción contiene alguna de estas palabras, no se imprime la etiqueta.
 
 ## 2. Formato de la etiqueta
 
-- **Descripción**: tal cual viene de Chess (columna F), sin reescribir ni abreviar.
-  Máximo 2 líneas; si no entra, se corta visualmente.
-- **Precio**: entero grande + centavos en superíndice, con punto de miles y coma
-  decimal (formato argentino). Ejemplo: `1.890,00` / `229,41`.
-- **Código de Chess**: abajo, chico, tal cual viene de la columna E.
-- Sin logos, sin colores de fondo: se imprime en blanco y negro salvo el título en
-  bordó.
+Es el modelo que se usa hoy en la góndola: **90 × 40 mm**, con marco negro completo y
+tres franjas separadas por líneas.
+
+```
+┌──────────────────────────────────────┐
+│ CHIPS C/CHOC (14U X 120GR) TOS…      │  1 cm — descripción
+├──────────────────────────────────────┤
+│              $765,10                 │  2,5 cm — precio
+├──────────────────────────────────────┤
+│ Cod: 429039   PRECIO FINAL   7798…38 │  0,5 cm — códigos
+└──────────────────────────────────────┘
+```
+
+- **Descripción**: tal cual viene de Chess (columna F), en MAYÚSCULAS, alineada a la
+  izquierda, en **una sola línea**. Si no entra se corta con `…` (no se reescribe ni
+  se abrevia a mano).
+- **Precio**: grande y centrado, con el `$` pegado al número y los **centavos del mismo
+  tamaño**. Punto de miles y coma decimal. Ejemplo: `$765,10` / `$1.890,00`.
+  Si el número es tan largo que no entra, se achica solo.
+- **Pie en tres partes**: `Cod: <código de Chess>` a la izquierda, `PRECIO FINAL` al
+  centro, y el **código de barras** a la derecha (como número, igual al modelo; puede
+  dibujarse en barras si se pide).
+- Todo en **negro sobre blanco**, sin logos ni colores: la impresora es láser B/N.
+- Entran **14 etiquetas por hoja A4** (2 columnas × 7 filas), pegadas entre sí para
+  cortar de lado a lado con la guillotina.
 
 ## 3. Redondeo
 

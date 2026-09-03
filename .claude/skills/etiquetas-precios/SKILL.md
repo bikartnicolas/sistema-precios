@@ -47,8 +47,13 @@ python3 generar_etiquetas.py lista.xlsx --min 500 --max 2000
 python3 generar_etiquetas.py nueva.xlsx --comparar-con anterior.xlsx --solo-cambios
 ```
 
-Opciones de formato: `--columnas` (default 3), `--alto` en mm (default 40),
-`--sin-codigo`. Para ver todo: `python3 generar_etiquetas.py --help`.
+Opciones de formato: `--ancho` y `--alto` en mm (por defecto **90 × 40**, la medida real
+de la etiqueta de góndola), `--texto` en px y `--sin-codigo`. Para ver todo:
+`python3 generar_etiquetas.py --help`.
+
+La etiqueta sale igual al modelo que se usa hoy: marco negro, descripción en una línea
+truncada con `…`, precio grande centrado, y pie con `Cod:` / `PRECIO FINAL` / código de
+barras. El detalle está en `reglas.md`.
 
 ## Reglas que se aplican siempre
 
@@ -78,6 +83,7 @@ generar las etiquetas, para que confirme.
 
 - Si el conteo de productos leídos es muy distinto al de filas del Excel, revisar que
   las columnas sigan siendo E/F/S/AA: abrir el Excel y verificar antes de seguir.
-- Si una descripción sale cortada en la etiqueta, es el límite de 2 líneas del diseño:
-  bajar el tamaño con `--alto` mayor, o avisarle a Nico qué productos quedaron largos.
+- Si una descripción sale cortada con `…`, es porque la franja de arriba es de una sola
+  línea (así es la etiqueta real): bajar `--texto`, o avisarle a Nico qué productos
+  quedaron largos. Nunca abreviar la descripción a mano.
 - Nunca inventar precios ni completar los que están en $0.

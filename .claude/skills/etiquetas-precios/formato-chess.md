@@ -17,10 +17,15 @@ pone Chess pueden variar entre exports, las posiciones no.
 
 | Columna | Índice (0-based) | Contenido | Uso en la etiqueta |
 |---------|------------------|-----------|--------------------|
-| **E**   | 4  | Código de Chess (sistema) | Va abajo de todo, chico |
-| **F**   | 5  | Descripción del producto  | Título, arriba, en bordó |
+| **E**   | 4  | Código de Chess (sistema) | Pie, a la izquierda: `Cod: 429039` |
+| **F**   | 5  | Descripción del producto  | Franja de arriba, en mayúsculas |
 | **S**   | 18 | Precio unitario           | El número grande |
 | **AA**  | 26 | Marca                     | No se imprime; sirve para filtrar |
+| (por nombre) | — | Código de barras (EAN)  | Va a la derecha del pie |
+
+La columna del **código de barras** no tiene posición fija: se busca por el nombre del
+encabezado (algo que contenga *barra*, *EAN* o *GTIN*). Si el Excel no la trae, y el
+código de Chess resulta ser un EAN-13 válido, se usa ese.
 
 El resto de las columnas del export (costo, stock, IVA, rubro, etc.) se ignoran.
 

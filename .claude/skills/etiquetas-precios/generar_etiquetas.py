@@ -131,15 +131,39 @@ def format_price(n):
     return entero, dec
 
 
-def load_products(path, c_cod, c_desc, c_precio, c_marca):
+def ean_valido(codigo):
+    """True si el codigo es un EAN-13 (o UPC-A de 12) con digito verificador correcto."""
+    d = re.sub(r"\D", "", str(codigo or ""))
+    if len(d) == 12:
+        d = "0" + d
+    if len(d) != 13:
+        return False
+    suma = sum(int(d[i]) * (1 if i % 2 == 0 else 3) for i in range(12))
+    return (10 - suma % 10) % 10 == int(d[12])
+
+
+def buscar_columna_ean(rows):
+    """Ubica la columna del codigo de barras por el nombre del encabezado."""
+    for fila in rows[:5]:
+        for i, celda in enumerate(fila):
+            h = norm(celda)
+            if "barra" in h or h == "ean" in h or "ean13" in h or "gtin" in h:
+                return i
+    return -1
+
+
+def load_products(path, c_cod, c_desc, c_precio, c_marca, c_ean=None):
     rows = read_rows(path)
     if not rows:
         sys.exit(f"El archivo {path} no tiene filas.")
 
+    if c_ean is None:
+        c_ean = buscar_columna_ean(rows)
+
     productos = []
     for r in rows:
         def cell(i):
-            return r[i].strip() if 0 <= i < len(r) else ""
+            return r[i].strip() if i is not None and 0 <= i < len(r) else ""
 
         codigo, desc = cell(c_cod), cell(c_desc)
         if not codigo or not desc:
@@ -149,11 +173,16 @@ def load_products(path, c_cod, c_desc, c_precio, c_marca):
         if not re.search(r"\d", precio_raw):
             continue
         marca = cell(c_marca) if c_marca is not None and c_marca >= 0 else ""
+        # Si el Excel no trae columna de barras, se usa el codigo cuando es un EAN valido
+        ean = re.sub(r"\D", "", cell(c_ean)) if c_ean is not None and c_ean >= 0 else ""
+        if not ean and ean_valido(codigo):
+            ean = re.sub(r"\D", "", codigo)
         productos.append({
             "codigo": codigo,
             "descripcion": desc,
             "precio": parse_price(precio_raw),
             "marca": marca or (desc.split()[0] if desc.split() else "(sin marca)"),
+            "ean": ean,
         })
     return productos
 
@@ -164,38 +193,76 @@ def load_products(path, c_cod, c_desc, c_precio, c_marca):
 PLANTILLA = """<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><title>Etiquetas de precios</title>
 <style>
-  body{{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}}
-  .barra{{padding:12px 16px;background:#1c1f24;color:#fff;display:flex;gap:14px;align-items:center}}
-  .barra button{{margin-left:auto;padding:8px 16px;border:none;border-radius:8px;background:#7a1f2b;color:#fff;font-weight:600;cursor:pointer}}
-  .grid{{display:grid;grid-template-columns:repeat({cols},1fr)}}
-  .et{{border:1px dashed #b9bcc2;height:{alto}mm;padding:8px 6px;display:flex;flex-direction:column;
-      align-items:center;justify-content:center;text-align:center;overflow:hidden;break-inside:avoid}}
-  .desc{{color:#7a1f2b;font-size:13px;font-weight:600;line-height:1.2;margin-bottom:5px;
-      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
-  .precio{{font-size:40px;font-weight:800;letter-spacing:-1px;line-height:1;color:#111}}
-  .precio sup{{font-size:.5em;top:-.85em}}
-  .cod{{margin-top:5px;font-size:11px;color:#111}}
-  @media print{{.barra{{display:none}} @page{{size:A4;margin:8mm}}}}
+  *{{box-sizing:border-box}}
+  body{{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f4f6f6}}
+  .barra{{padding:12px 16px;background:#363435;color:#fff;display:flex;gap:14px;align-items:center}}
+  .barra button{{margin-left:auto;padding:8px 16px;border:none;border-radius:8px;
+      background:#57a595;color:#fff;font-weight:600;cursor:pointer}}
+  .hoja{{padding:26px 20px;display:flex}}
+  /* Medida fisica fija de la etiqueta de gondola: {ancho} x {alto} mm */
+  .grid{{
+    display:grid;grid-template-columns:repeat({cols},{ancho}mm);justify-content:center;
+    width:196mm;margin:0 auto;background:#fff;
+    border-left:1.6px solid #000;border-top:1.6px solid #000;
+  }}
+  .et{{
+    height:{alto}mm;overflow:hidden;background:#fff;color:#000;
+    border-right:1.6px solid #000;border-bottom:1.6px solid #000;
+    display:flex;flex-direction:column;break-inside:avoid;
+    font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;
+  }}
+  .desc{{
+    height:25%;flex:none;display:flex;align-items:center;overflow:hidden;
+    padding:0 2.2mm;border-bottom:1.6px solid #000;
+    font-size:{txt}px;font-weight:700;text-transform:uppercase;letter-spacing:-.3px;
+  }}
+  .desc span{{display:block;width:100%;min-width:0;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+  .medio{{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 2mm}}
+  .precio{{font-size:{precio}px;font-weight:800;line-height:.95;letter-spacing:-.045em;white-space:nowrap}}
+  .pie{{
+    height:12.5%;flex:none;display:grid;grid-template-columns:1fr auto 1fr;
+    align-items:center;gap:1.5mm;padding:0 2.2mm;border-top:1.6px solid #000;
+    font-size:{pie}px;font-weight:700;line-height:1;
+  }}
+  .pie .izq{{text-align:left;white-space:nowrap;overflow:hidden}}
+  .pie .cen{{text-align:center;white-space:nowrap}}
+  .pie .der{{text-align:right;white-space:nowrap;overflow:hidden}}
+  @media print{{
+    .barra{{display:none}} body{{background:#fff}} .hoja{{padding:0;display:block}}
+    @page{{size:A4;margin:7mm}}
+  }}
 </style></head><body>
 <div class="barra"><strong>{n} etiquetas</strong><span>{detalle}</span>
 <button onclick="window.print()">Imprimir</button></div>
-<div class="grid">{etiquetas}</div>
+<div class="hoja"><div class="grid">{etiquetas}</div></div>
 </body></html>
 """
 
 
-def render(productos, cols, alto, detalle, mostrar_codigo=True):
+def render(productos, cols, ancho, alto, txt, detalle, mostrar_codigo=True):
     partes = []
     for p in productos:
         entero, dec = format_price(p["precio"])
-        cod = f'<div class="cod">{html.escape(p["codigo"])}</div>' if mostrar_codigo else ""
+        izq = f'Cod: {html.escape(p["codigo"])}' if mostrar_codigo else ""
+        der = html.escape(p.get("ean", "") or "")
         partes.append(
-            f'<div class="et"><div class="desc">{html.escape(p["descripcion"])}</div>'
-            f'<div class="precio">{entero},<sup>{dec}</sup></div>{cod}</div>'
+            '<div class="et">'
+            f'<div class="desc"><span>{html.escape(p["descripcion"])}</span></div>'
+            f'<div class="medio"><div class="precio">${entero},{dec}</div></div>'
+            f'<div class="pie"><span class="izq">{izq}</span>'
+            f'<span class="cen">PRECIO FINAL</span><span class="der">{der}</span></div>'
+            '</div>'
         )
+    # Completa la ultima fila para que las lineas de corte lleguen al borde
+    resto = len(productos) % cols
+    if resto:
+        partes += ['<div class="et"></div>'] * (cols - resto)
+
     return PLANTILLA.format(
-        cols=cols, alto=alto, n=len(productos),
-        detalle=html.escape(detalle), etiquetas="".join(partes),
+        cols=cols, ancho=ancho, alto=alto, txt=txt,
+        precio=round(txt * 3.8), pie=round(txt * 0.5, 1),
+        n=len(productos), detalle=html.escape(detalle), etiquetas="".join(partes),
     )
 
 
@@ -208,6 +275,7 @@ def main():
     ap.add_argument("--col-descripcion", default="F", help="Columna de la descripcion (default F)")
     ap.add_argument("--col-precio", default="S", help="Columna del precio unitario (default S)")
     ap.add_argument("--col-marca", default="AA", help="Columna de la marca (default AA); vacio = usar la 1a palabra de la descripcion")
+    ap.add_argument("--col-barras", default=None, help="Columna del codigo de barras; si se omite se busca por el nombre del encabezado")
     ap.add_argument("--marca", action="append", default=[], help="Filtrar por marca (repetible)")
     ap.add_argument("--codigos", default=None, help="Lista de codigos separados por coma")
     ap.add_argument("--codigos-archivo", default=None, help="Archivo de texto con un codigo por linea")
@@ -217,15 +285,17 @@ def main():
     ap.add_argument("--excluir", action="append", default=[], help="Codigo o palabra a excluir (repetible)")
     ap.add_argument("--comparar-con", default=None, help="Excel anterior para detectar cambios de precio")
     ap.add_argument("--solo-cambios", action="store_true", help="Solo productos cuyo precio cambio")
-    ap.add_argument("--columnas", type=int, default=3, help="Columnas de etiquetas por hoja (default 3)")
-    ap.add_argument("--alto", type=int, default=40, help="Alto de cada etiqueta en mm (default 40)")
+    ap.add_argument("--ancho", type=int, default=90, help="Ancho de cada etiqueta en mm (default 90, el de la gondola)")
+    ap.add_argument("--alto", type=int, default=40, help="Alto de cada etiqueta en mm (default 40, el de la gondola)")
+    ap.add_argument("--texto", type=float, default=19, help="Tamano del texto de la descripcion en px (default 19)")
     ap.add_argument("--sin-codigo", action="store_true", help="No imprimir el codigo en la etiqueta")
     args = ap.parse_args()
 
     letra = lambda x: col_index(x.upper() + "1") if x else None
+    col_ean = letra(args.col_barras) if args.col_barras else None
     productos = load_products(
         args.excel, letra(args.col_codigo), letra(args.col_descripcion),
-        letra(args.col_precio), letra(args.col_marca),
+        letra(args.col_precio), letra(args.col_marca), col_ean,
     )
     total_leidos = len(productos)
     filtros = []
@@ -265,7 +335,7 @@ def main():
     if args.comparar_con:
         previos = load_products(
             args.comparar_con, letra(args.col_codigo), letra(args.col_descripcion),
-            letra(args.col_precio), letra(args.col_marca),
+            letra(args.col_precio), letra(args.col_marca), col_ean,
         )
         anterior = {p["codigo"]: p["precio"] for p in previos}
         cambios, nuevos = [], []
@@ -288,10 +358,19 @@ def main():
 
     productos.sort(key=lambda p: (p["marca"].lower(), p["descripcion"].lower()))
     detalle = " · ".join(filtros) if filtros else "sin filtros"
-    with open(args.salida, "w", encoding="utf-8") as f:
-        f.write(render(productos, args.columnas, args.alto, detalle, not args.sin_codigo))
 
-    print(f"{len(productos)} etiquetas generadas (de {total_leidos} productos leidos) -> {args.salida}")
+    # Cuantas entran en una A4 (196 x 283 mm utiles) con esa medida fisica
+    cols = max(1, int(196 // args.ancho))
+    filas = max(1, int(283 // args.alto))
+    por_hoja = cols * filas
+    hojas = -(-len(productos) // por_hoja)
+
+    with open(args.salida, "w", encoding="utf-8") as f:
+        f.write(render(productos, cols, args.ancho, args.alto, args.texto,
+                       detalle, not args.sin_codigo))
+
+    print(f"{len(productos)} etiquetas generadas (de {total_leidos} productos leidos)")
+    print(f"{hojas} hoja(s) A4, {por_hoja} por hoja de {args.ancho} x {args.alto} mm -> {args.salida}")
 
 
 if __name__ == "__main__":

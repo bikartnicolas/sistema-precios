@@ -22,6 +22,21 @@ function parsePrecio(v) {
   return isNaN(n) ? 0 : n;
 }
 
+const norm = s => String(s ?? '').trim().toLowerCase()
+  .normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+// Busca la columna del codigo de barras por el nombre del encabezado, sin importar
+// en que posicion este (Chess puede moverla). Si no aparece, devuelve -1.
+function buscarColumnaEan(filas) {
+  for (const fila of filas.slice(0, 5)) {
+    for (let i = 0; i < fila.length; i++) {
+      const h = norm(fila[i]);
+      if (h.includes('barra') || h === 'ean' || h.includes('ean13') || h.includes('gtin')) return i;
+    }
+  }
+  return -1;
+}
+
 function leerProductos(excelPath, columnas = {}) {
   const XLSX = require('xlsx');
   const c = Object.assign({ codigo: 'E', descripcion: 'F', precio: 'S', marca: 'AA' }, columnas);
@@ -29,6 +44,7 @@ function leerProductos(excelPath, columnas = {}) {
 
   const wb = XLSX.readFile(excelPath);
   const filas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
+  const ei = c.ean ? col(c.ean) : buscarColumnaEan(filas);
 
   const productos = [];
   for (const r of filas) {
@@ -42,6 +58,7 @@ function leerProductos(excelPath, columnas = {}) {
       descripcion,
       precio,
       marca: String(r[mi] ?? '').trim() || descripcion.split(/\s+/)[0] || 'Sin marca',
+      ean: ei >= 0 ? String(r[ei] ?? '').trim().replace(/\D/g, '') : '',
     });
   }
   return productos;

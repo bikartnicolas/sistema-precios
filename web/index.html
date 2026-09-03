@@ -446,49 +446,66 @@
   .sheet{padding:26px 20px;overflow-x:auto;background:var(--surface-2);display:flex}
   /* Ancho real del área imprimible de una A4 (210mm menos 7mm de margen por lado):
      en pantalla la hoja se ve del mismo tamaño que va a salir impresa. */
+  /* La etiqueta tiene un tamaño FÍSICO fijo (el modelo de la góndola mide 90 × 40 mm),
+     así que la grilla usa columnas de ese ancho y se centra en la hoja. Puede sobrar
+     un poco de papel al costado: es el precio de que la etiqueta salga en su medida real.
+     Cada etiqueta aporta su borde derecho e inferior y la hoja el izquierdo y el
+     superior: así cada una queda enmarcada y las líneas de corte son continuas. */
   .labels{
-    display:grid;grid-template-columns:repeat(var(--cols,3),1fr);gap:0;
-    width:196mm;margin:0 auto;flex:none;
-    border-left:1px dashed #BFC6C6;border-top:1px dashed #BFC6C6;background:#fff;
+    display:grid;grid-template-columns:repeat(var(--cols,2),var(--lw,90mm));gap:0;
+    justify-content:center;width:196mm;margin:0 auto;flex:none;background:#fff;
+    border-left:var(--marco,1.6px) solid #000;border-top:var(--marco,1.6px) solid #000;
     box-shadow:0 1px 3px rgba(54,52,53,.1), 0 10px 30px rgba(54,52,53,.09);
   }
   .lbl{
-    position:relative;height:var(--lh,45mm);overflow:hidden;background:#fff;
-    border-right:1px dashed #BFC6C6;border-bottom:1px dashed #BFC6C6;
+    height:var(--lh,40mm);overflow:hidden;background:#fff;color:#000;
+    border-right:var(--marco,1.6px) solid #000;border-bottom:var(--marco,1.6px) solid #000;
     display:flex;flex-direction:column;break-inside:avoid;
+    font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;
   }
   .lbl.vacia{background:#fff}
-  .lbl .rule{height:3px;background:#000;flex:none}
-  .lbl .in{
-    flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:8px 11px 5px;text-align:center;
-  }
+
+  /* Franja de la descripción: 1 cm de los 4 cm de alto = 25 % */
   .lbl .d{
-    font-size:var(--ds,12px);font-weight:700;color:#000;line-height:1.24;letter-spacing:-.15px;
-    margin-bottom:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    height:25%;flex:none;display:flex;align-items:center;overflow:hidden;
+    padding:0 2.2mm;border-bottom:var(--marco,1.6px) solid #000;
+    font-size:var(--ds,19px);font-weight:700;text-transform:uppercase;letter-spacing:-.3px;
+  }
+  /* El "…" del final necesita un bloque propio: dentro de un flex no se aplica */
+  .lbl .d span{
+    display:block;width:100%;min-width:0;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+
+  /* Franja del precio: lo que queda en el medio */
+  .lbl .in{
+    flex:1;min-height:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:0 2mm;
   }
   /* "Antes $X" tachado, solo en los productos que bajaron de precio */
   .lbl .antes{
-    font-size:calc(var(--ds,12px)*.86);font-weight:600;color:#000;margin-bottom:2px;
-    text-decoration:line-through;text-decoration-thickness:1.5px;opacity:.75;
+    font-size:calc(var(--ds,19px)*.7);font-weight:700;line-height:1;margin-bottom:.5mm;
+    text-decoration:line-through;text-decoration-thickness:1.5px;
   }
-  .lbl .pz{display:flex;align-items:flex-start;justify-content:center;gap:2px;color:#000}
-  .lbl .pz .cu{font-size:calc(var(--ps,46px)*.34);font-weight:700;margin-top:.36em;letter-spacing:-.5px}
-  .lbl .pz .en{font-size:var(--ps,46px);font-weight:800;line-height:.9;letter-spacing:-2.5px}
-  .lbl .pz .ce{font-size:calc(var(--ps,46px)*.42);font-weight:800;margin-top:.1em;letter-spacing:-1px}
+  .lbl .pz{
+    font-size:var(--ps,72px);font-weight:800;line-height:.95;letter-spacing:-.045em;
+    white-space:nowrap;
+  }
+
+  /* Franja del código: 0,5 cm de los 4 cm = 12,5 % */
   .lbl .ft{
-    display:flex;align-items:center;gap:8px;padding:4px 10px;flex:none;
-    border-top:1px solid #D8DEDE;min-height:0;
+    height:12.5%;flex:none;display:grid;grid-template-columns:1fr auto 1fr;
+    align-items:center;gap:1.5mm;padding:0 2.2mm;
+    border-top:var(--marco,1.6px) solid #000;
+    font-size:calc(var(--ds,19px)*.5);font-weight:700;line-height:1;
   }
-  .lbl .ft .cd{font-size:10px;color:#3A4041;letter-spacing:.05em;font-variant-numeric:tabular-nums;font-weight:600}
-  .lbl .ft .fch{font-size:7.6px;color:#6B7273;letter-spacing:.04em;font-variant-numeric:tabular-nums;align-self:flex-end;margin-bottom:1px}
-  .lbl .ft .bcwrap{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;max-width:68%}
-  .lbl .ft .bcwrap svg{width:100%;display:block}
-  .lbl .ft .bcnum{font-size:7.6px;color:#3A4041;letter-spacing:.05em;font-variant-numeric:tabular-nums;font-weight:600}
-  .lbl .ft .mk{margin-left:auto;display:flex;align-items:center;gap:5px;flex:none}
-  .lbl .ft .mk svg{height:13px;width:13px}
-  .lbl .ft .mk img{height:23px;width:auto}   /* logo original de la empresa, sin recortar */
-  .lbl .ft .mk span{font-size:8.5px;font-weight:800;color:#000;letter-spacing:.1em}
+  .lbl .ft .izq{text-align:left;white-space:nowrap;overflow:hidden}
+  .lbl .ft .cen{text-align:center;white-space:nowrap}
+  .lbl .ft .der{text-align:right;white-space:nowrap;overflow:hidden}
+  .lbl .ft .der svg{height:80%;width:100%;display:block;fill:#000}   /* barras, si se activan */
+  .lbl .ft .mk{display:inline-flex;align-items:center;gap:1mm;vertical-align:middle}
+  .lbl .ft .mk img{height:3.2mm;width:auto}
+  .lbl .ft .mk svg{height:2.6mm;width:2.6mm}
 
   /* ---------- Vista previa a tamaño real ---------- */
   .preview-overlay{
@@ -649,6 +666,7 @@
         <label style="display:flex;flex-direction:column;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink-4);letter-spacing:.04em">DESCRIPCIÓN<select id="mDesc"></select></label>
         <label style="display:flex;flex-direction:column;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink-4);letter-spacing:.04em">PRECIO<select id="mPre"></select></label>
         <label style="display:flex;flex-direction:column;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink-4);letter-spacing:.04em">MARCA<select id="mMar"></select></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink-4);letter-spacing:.04em">CÓD. DE BARRAS<select id="mEan"></select></label>
       </div>
       <div style="margin-top:18px"><button class="b-primary" id="btnMap">Confirmar y continuar</button></div>
     </div>
@@ -795,20 +813,22 @@
     </div>
     <div class="card opts" style="margin-bottom:22px">
       <label>Formato <select id="oFmt" style="width:auto">
-        <option value="2x4">Grande · 98 × 70 mm (8 por hoja)</option>
-        <option value="3x5">Mediana · 65 × 57 mm (15 por hoja)</option>
-        <option value="3x6" selected>Estándar · 65 × 47 mm (18 por hoja)</option>
-        <option value="4x7">Chica · 49 × 40 mm (28 por hoja)</option>
-        <option value="4x8">Mínima · 49 × 35 mm (32 por hoja)</option>
+        <option value="90x40" selected>90 × 40 mm — el de la góndola (14 por hoja)</option>
+        <option value="98x47">98 × 47 mm — grande (12 por hoja)</option>
+        <option value="65x35">65 × 35 mm — chica (24 por hoja)</option>
+        <option value="45x30">45 × 30 mm — mínima (36 por hoja)</option>
       </select></label>
       <label>Copias <select id="oCopias" style="width:64px">
         <option selected>1</option><option>2</option><option>3</option><option>4</option>
       </select></label>
-      <label>Precio px <input type="number" id="oP" value="46" min="20" max="90"></label>
-      <label>Texto px <input type="number" id="oD" value="12" min="8" max="22"></label>
+      <label>Precio px <input type="number" id="oP" value="72" min="20" max="140"></label>
+      <label>Texto px <input type="number" id="oD" value="19" min="8" max="34"></label>
       <span class="opts-toggles">
-        <label class="chk"><input type="checkbox" id="oCod" checked> Código</label>
-        <label class="chk"><input type="checkbox" id="oLogo" checked> Logo</label>
+        <label class="chk"><input type="checkbox" id="oCod" checked> Cod: de Chess</label>
+        <label class="chk"><input type="checkbox" id="oFinal" checked> PRECIO FINAL</label>
+        <label class="chk"><input type="checkbox" id="oEan" checked> Código de barras</label>
+        <label class="chk" title="Dibuja las barras en vez del número"><input type="checkbox" id="oBarras"> En barras</label>
+        <label class="chk"><input type="checkbox" id="oLogo"> Logo</label>
         <label class="chk"><input type="checkbox" id="oFecha"> Fecha</label>
         <label class="chk" title="En los productos que bajaron de precio, muestra el precio anterior tachado">
           <input type="checkbox" id="oAntes" checked> Precio anterior en bajas
@@ -981,17 +1001,20 @@ function mostrarMapeo(){
   const opts = headers.map((h,i)=>`<option value="${i}">${colLetter(i)} — ${esc(h) || '(vacío)'}</option>`).join('');
   ['mCod','mDesc','mPre'].forEach(id=>document.getElementById(id).innerHTML = opts);
   document.getElementById('mMar').innerHTML = '<option value="-1">— usar 1ª palabra de la descripción —</option>' + opts;
+  document.getElementById('mEan').innerHTML = '<option value="-1">— usar el código si es un EAN —</option>' + opts;
   const buscar = ks => { for(const k of ks){ const i = headers.findIndex(h=>norm(h).includes(k)); if(i>=0) return i; } return -1; };
   document.getElementById('mCod').value  = ancho ? F.cod  : Math.max(0, buscar(['codigo','cod.','sku']));
   document.getElementById('mDesc').value = ancho ? F.desc : Math.max(0, buscar(['descrip','producto','articulo']));
   document.getElementById('mPre').value  = ancho ? F.pre  : Math.max(0, buscar(['precio','unitario','importe']));
   document.getElementById('mMar').value  = headers.length > F.mar ? F.mar : buscar(['marca']);
+  document.getElementById('mEan').value  = buscar(['barra','ean','gtin']);
   document.getElementById('mapBox').style.display = 'block';
 }
 
 document.getElementById('btnMap').addEventListener('click', async ()=>{
   const ci = +document.getElementById('mCod').value, di = +document.getElementById('mDesc').value;
   const pi = +document.getElementById('mPre').value, mi = +document.getElementById('mMar').value;
+  const ei = +document.getElementById('mEan').value;
   document.getElementById('mapBox').style.display = 'none';
   await cargarProductos(rawRows.map(r=>{
     const descripcion = (r[di] ?? '').toString().trim();
@@ -999,7 +1022,8 @@ document.getElementById('btnMap').addEventListener('click', async ()=>{
       codigo: (r[ci] ?? '').toString().trim(),
       descripcion,
       precio: parsePrice(r[pi]),
-      marca: (mi >= 0 ? (r[mi] ?? '').toString().trim() : '') || descripcion.split(/\s+/)[0] || 'Sin marca'
+      marca: (mi >= 0 ? (r[mi] ?? '').toString().trim() : '') || descripcion.split(/\s+/)[0] || 'Sin marca',
+      ean: ei >= 0 ? (r[ei] ?? '').toString().trim() : ''
     };
   }));
 });
@@ -1358,8 +1382,15 @@ document.getElementById('btnMigrar').addEventListener('click', async ()=>{
 // ---------- Carga + comparación ----------
 async function cargarProductos(lista){
   productos = lista
-    .map(p=>({ codigo:String(p.codigo||'').trim(), descripcion:String(p.descripcion||'').trim(),
-               marca:String(p.marca||'Sin marca').trim(), precio:Number(p.precio)||0 }))
+    .map(p=>{
+      const codigo = String(p.codigo||'').trim();
+      // Si el Excel no trae columna de código de barras, se usa el código de Chess
+      // cuando resulta ser un EAN-13 válido (así la etiqueta igual lo muestra).
+      let ean = String(p.ean||'').trim();
+      if(!ean){ const d = ean13Digits(codigo); if(d && ean13Valido(d)) ean = codigo; }
+      return { codigo, descripcion:String(p.descripcion||'').trim(),
+               marca:String(p.marca||'Sin marca').trim(), precio:Number(p.precio)||0, ean };
+    })
     .filter(p => p.codigo && p.descripcion && p.precio > 0);   // los de $0 nunca van a góndola
 
   seleccion.clear();
@@ -1763,14 +1794,23 @@ function generar(){
 // A4 = 210 x 297 mm, con 7mm de margen por lado. Las etiquetas llenan la hoja exacta y
 // van pegadas entre si, para poder cortar de lado a lado con la guillotina.
 const A4 = {ancho:210, alto:297, margen:7};
+
+// Las etiquetas tienen medida física fija (la de la góndola es de 90 × 40 mm).
+// Con el ancho y el alto se calcula cuántas entran en una A4.
+const FORMATOS = {
+  '90x40': {ancho:90, alto:40},   // el modelo que se usa en la góndola
+  '98x47': {ancho:98, alto:47},
+  '65x35': {ancho:65, alto:35},
+  '45x30': {ancho:45, alto:30},
+};
+
 function medidas(){
-  const [cols, filas] = document.getElementById('oFmt').value.split('x').map(Number);
-  return {
-    cols, filas,
-    anchoMm: (A4.ancho - A4.margen*2) / cols,
-    altoMm:  (A4.alto  - A4.margen*2) / filas,
-    porHoja: cols * filas,
-  };
+  const f = FORMATOS[document.getElementById('oFmt').value] || FORMATOS['90x40'];
+  const utilAncho = A4.ancho - A4.margen*2;
+  const utilAlto  = A4.alto  - A4.margen*2;
+  const cols  = Math.max(1, Math.floor(utilAncho / f.ancho));
+  const filas = Math.max(1, Math.floor(utilAlto  / f.alto));
+  return { cols, filas, anchoMm:f.ancho, altoMm:f.alto, porHoja: cols * filas };
 }
 function resumenHojas(){
   const prods = (window.__labels || []).length;
@@ -1783,7 +1823,7 @@ function resumenHojas(){
   document.getElementById('etSub').textContent =
     `${n} etiqueta${n!==1?'s':''}` +
     (o.copias > 1 ? ` (${prods} productos × ${o.copias} copias)` : ` · ${marcas} marca${marcas!==1?'s':''}`) +
-    ` · ${hojas} hoja${hojas!==1?'s':''} A4 de ${m.anchoMm.toFixed(0)} × ${m.altoMm.toFixed(0)} mm. ` +
+    ` · ${hojas} hoja${hojas!==1?'s':''} A4, ${m.porHoja} por hoja de ${m.anchoMm} × ${m.altoMm} mm. ` +
     `Se imprimen en negro y van pegadas: cortás de lado a lado.`;
 }
 
@@ -1827,42 +1867,61 @@ function barcodeSvg(codigoRaw){
 
 // ---------- Armado de cada etiqueta ----------
 function opcionesEtiqueta(){
+  const on = id => document.getElementById(id).checked;
   return {
-    cod:    document.getElementById('oCod').checked,
-    logo:   document.getElementById('oLogo').checked,
-    fecha:  document.getElementById('oFecha').checked,
-    antes:  document.getElementById('oAntes').checked,
+    cod: on('oCod'), final: on('oFinal'), ean: on('oEan'), barras: on('oBarras'),
+    logo: on('oLogo'), fecha: on('oFecha'), antes: on('oAntes'),
     copias: +document.getElementById('oCopias').value || 1,
   };
 }
 
+// Arma una etiqueta igual al modelo de la góndola:
+//
+//   ┌──────────────────────────────────────┐
+//   │ CHIPS C/CHOC (14U X 120GR) TOS…      │  descripción, 1 línea, se corta con …
+//   ├──────────────────────────────────────┤
+//   │              $765,10                 │  precio grande, centavos del mismo tamaño
+//   ├──────────────────────────────────────┤
+//   │ Cod: 429039   PRECIO FINAL   7798…38 │  código de Chess · texto fijo · código de barras
+//   └──────────────────────────────────────┘
 function labelHtml(p, o){
-  const [i,d] = partes(p.precio);
-  const marca = logoReal
-    ? `<img src="${logoReal}" alt="Tumalac">`
-    : `<svg viewBox="0 0 132 132"><use href="#isoBN"/></svg><span>TUMALAC</span>`;
+  const [ent, cent] = partes(p.precio);
 
-  let ident = '';
-  if(o.cod){
-    const bc = barcodeSvg(p.codigo);
-    ident = bc
-      ? `<div class="bcwrap">${bc}<span class="bcnum">${esc(p.codigo)}</span></div>`
-      : `<span class="cd">${esc(p.codigo)}</span>`;
+  // Izquierda: el código de Chess. Opcionalmente, la fecha de impresión debajo.
+  const izq = [
+    o.cod ? `Cod: ${esc(p.codigo)}` : '',
+    o.fecha ? new Date().toLocaleDateString('es-AR') : '',
+  ].filter(Boolean).join(' · ');
+
+  // Centro: el texto fijo, y el logo si se pidió
+  const logo = logoReal
+    ? `<img src="${logoReal}" alt="Tumalac">`
+    : `<svg viewBox="0 0 132 132"><use href="#isoBN"/></svg>`;
+  const cen = [
+    o.final ? 'PRECIO FINAL' : '',
+    o.logo ? `<span class="mk">${logo}</span>` : '',
+  ].filter(Boolean).join(' ');
+
+  // Derecha: el código de barras, como número (igual al modelo) o dibujado en barras
+  let der = '';
+  if(o.ean && p.ean){
+    const bc = o.barras ? barcodeSvg(p.ean) : null;
+    der = bc || esc(p.ean);
   }
-  const hoy = o.fecha ? `<span class="fch">${new Date().toLocaleDateString('es-AR')}</span>` : '';
-  const ft = (o.cod || o.logo || o.fecha)
-    ? `<div class="ft">${ident}${hoy}${o.logo?`<span class="mk">${marca}</span>`:''}</div>` : '';
+
+  const ft = (izq || cen || der)
+    ? `<div class="ft"><span class="izq">${izq}</span><span class="cen">${cen}</span><span class="der">${der}</span></div>`
+    : '';
 
   // Solo en las BAJAS de precio: el precio viejo tachado arriba del nuevo
   const bajo = o.antes && p.estado === 'cambio' && p.precioAnterior > p.precio;
   const antes = bajo ? `<div class="antes">${money(p.precioAnterior)}</div>` : '';
 
   return `<div class="lbl">
-    <div class="rule"></div>
+    <div class="d"><span>${esc(p.descripcion)}</span></div>
     <div class="in">
-      <div class="d">${esc(p.descripcion)}</div>
       ${antes}
-      <div class="pz"><span class="cu">$</span><span class="en">${i}</span><span class="ce">${d}</span></div>
+      <div class="pz">$${ent},${cent}</div>
     </div>${ft}
   </div>`;
 }
@@ -1870,68 +1929,41 @@ function labelHtml(p, o){
 // Achica el texto de las etiquetas donde no entra, para que nunca salga cortado.
 // Solo reduce: nunca agranda más allá del tamaño elegido en las opciones.
 //
-// La descripción se recorta por CSS (line-clamp), que corta el texto SIN desbordar el
-// alto: por eso hay que medirla con el recorte apagado. En vez de forzar 2 líneas fijas,
-// se usa todo el alto que queda libre en la etiqueta, así entra completa más seguido.
-const MIN_TXT = 7, MIN_PRECIO = 18, MARGEN_DESC = 7;
+// La descripción va en una sola línea y se corta con "…" si no entra, igual que el
+// modelo de la góndola. El precio, en cambio, se achica solo cuando el número es tan
+// largo que se pasaría del ancho de la etiqueta.
+const MIN_PRECIO = 18;
 
 function ajustarTextos(){
-  const base = +document.getElementById('oD').value || 12;
-  const basePr = +document.getElementById('oP').value || 46;
+  const base = +document.getElementById('oD').value || 19;
+  const basePr = +document.getElementById('oP').value || 72;
   let achicadas = 0, cortadas = 0;
 
   document.querySelectorAll('#labels .lbl:not(.vacia), #previewStage .lbl').forEach(lbl=>{
     const d = lbl.querySelector('.d');
     const pz = lbl.querySelector('.pz');
     const inner = lbl.querySelector('.in');
-    const antes = lbl.querySelector('.antes');
     // Si la etiqueta todavía no está en pantalla, todo mide cero: no se puede ajustar
     if(!inner || !inner.clientWidth || !inner.clientHeight) return;
     lbl.style.setProperty('--ps', basePr + 'px');
 
-    // 1) El precio primero: si el número es muy largo (millones) no debe pasarse de ancho.
-    //    Su bloque no está estirado por el flex, así que se mide su ancho real.
+    // El precio: si el número es muy largo (millones) se achica hasta que entre.
+    // Su bloque no está estirado por el flex, así que se mide su ancho real.
     if(pz){
-      const dispoW = inner.clientWidth - 8;      // deja aire a los costados
+      const dispoW = inner.clientWidth - 4;
       let t = basePr;
-      while(t > MIN_PRECIO && pz.getBoundingClientRect().width > dispoW){
+      while(t > MIN_PRECIO &&
+            (pz.getBoundingClientRect().width > dispoW || pz.offsetHeight > inner.clientHeight)){
         t -= 1;
         lbl.style.setProperty('--ps', t + 'px');
       }
+      if(t < basePr) achicadas++;
     }
 
-    // 2) La descripción usa el alto que sobra, con las líneas que entren
-    if(d){
-      const cs = getComputedStyle(inner);
-      const padV = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
-      const ocupado = (pz ? pz.offsetHeight : 0) + (antes ? antes.offsetHeight : 0) + MARGEN_DESC;
-      const dispoH = Math.max(inner.clientHeight - padV - ocupado, 12);
-
-      d.style.webkitLineClamp = 'unset';         // apaga el recorte para poder medir
-      let t = base;
-      d.style.fontSize = t + 'px';
-      while(t > MIN_TXT && d.scrollHeight > dispoH){
-        t -= 0.5;
-        d.style.fontSize = t + 'px';
-      }
-      // Si aun al mínimo no entra, se recorta a las líneas que quepan (nunca desborda).
-      // Se comparan líneas contra líneas: es exactamente lo que se ve en la etiqueta.
-      const altoLinea = t * 1.24;
-      const lineasQueEntran   = Math.max(1, Math.floor(dispoH / altoLinea));
-      const lineasNecesarias  = Math.max(1, Math.round(d.scrollHeight / altoLinea));
-      if(lineasNecesarias > lineasQueEntran) cortadas++;
-      d.style.webkitLineClamp = lineasQueEntran;
-      if(t < base) achicadas++;
-    }
-
-    // 3) Red de seguridad: si el conjunto todavía no entra a lo alto, baja el precio
-    if(pz){
-      let t = parseFloat(lbl.style.getPropertyValue('--ps')) || basePr;
-      while(t > MIN_PRECIO && inner.scrollHeight > inner.clientHeight + 1){
-        t -= 1;
-        lbl.style.setProperty('--ps', t + 'px');
-      }
-    }
+    // La descripción va en UNA línea, como el modelo: si no entra se corta con "…".
+    // Acá solo se cuenta cuántas quedaron cortadas, para poder avisarlo.
+    const txt = d && d.firstElementChild;
+    if(txt && txt.scrollWidth > txt.clientWidth + 1) cortadas++;
   });
 
   // Avisa si en este formato alguna descripción no llega a entrar completa
@@ -1941,8 +1973,8 @@ function ajustarTextos(){
     const cortadasHoja = Math.min(cortadas, enHoja);
     aviso.style.display = cortadasHoja ? 'flex' : 'none';
     if(cortadasHoja) aviso.querySelector('span').textContent =
-      `${cortadasHoja} descripci${cortadasHoja===1?'ón queda recortada':'ones quedan recortadas'} ` +
-      `en este formato. Probá uno más grande si necesitás el nombre completo.`;
+      `${cortadasHoja} descripci${cortadasHoja===1?'ón no entra completa y se corta con "…"':'ones no entran completas y se cortan con "…"'}. ` +
+      `Bajá el "Texto px" o usá un formato más ancho si necesitás el nombre completo.`;
   }
   return {achicadas, cortadas};
 }
@@ -2005,14 +2037,16 @@ function estilo(){
   const g = document.getElementById('labels');
   const m = medidas();
   g.style.setProperty('--cols', m.cols);
-  g.style.setProperty('--lh', m.altoMm.toFixed(2) + 'mm');
+  g.style.setProperty('--lw', m.anchoMm + 'mm');
+  g.style.setProperty('--lh', m.altoMm + 'mm');
   g.style.setProperty('--ps', document.getElementById('oP').value + 'px');
   g.style.setProperty('--ds', document.getElementById('oD').value + 'px');
   if(document.getElementById('previewOverlay').style.display !== 'none') renderPreview();
 }
 ['oFmt','oCopias'].forEach(id=>document.getElementById(id).addEventListener('change', ()=>{ estilo(); pintarEtiquetas(); resumenHojas(); }));
 ['oP','oD'].forEach(id=>document.getElementById(id).addEventListener('input', ()=>{ estilo(); ajustarTextos(); resumenHojas(); }));
-['oCod','oLogo','oFecha','oAntes'].forEach(id=>document.getElementById(id).addEventListener('change', pintarEtiquetas));
+['oCod','oFinal','oEan','oBarras','oLogo','oFecha','oAntes']
+  .forEach(id=>document.getElementById(id).addEventListener('change', pintarEtiquetas));
 document.getElementById('btnPrint').addEventListener('click', ()=>window.print());
 // Red de seguridad: reajusta justo antes de imprimir, por si algo quedó desactualizado
 window.addEventListener('beforeprint', ajustarTextos);

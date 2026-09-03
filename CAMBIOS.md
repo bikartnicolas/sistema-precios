@@ -5,6 +5,42 @@ Lo más nuevo va arriba.
 
 ---
 
+## 2026-09-03 · La etiqueta real de góndola (90 × 40 mm)
+
+El sistema ahora imprime la **misma etiqueta que se usa hoy** en la góndola, con las
+medidas exactas que me pasó Nico: **9 cm de ancho × 4 cm de alto**, 1 cm para la franja
+de la descripción y 0,5 cm para la del código.
+
+```
+┌──────────────────────────────────────┐
+│ CHIPS C/CHOC (14U X 120GR) TOS…      │  1 cm — descripción
+├──────────────────────────────────────┤
+│              $765,10                 │  2,5 cm — precio
+├──────────────────────────────────────┤
+│ Cod: 429039   PRECIO FINAL   7798…38 │  0,5 cm — códigos
+└──────────────────────────────────────┘
+```
+
+- **Marco negro completo** y las tres franjas separadas por líneas, como el modelo.
+- **Descripción** en MAYÚSCULAS, alineada a la izquierda, en **una sola línea**; si no
+  entra se corta con `…` (y el sistema avisa cuántas se cortaron).
+- **Precio** grande y centrado, `$` pegado al número y **centavos del mismo tamaño**
+  (`$765,10`). Si el número es muy largo se achica solo.
+- **Pie en tres partes**: `Cod:` con el código de Chess a la izquierda, `PRECIO FINAL`
+  al centro y el **código de barras** a la derecha (número o barras dibujadas).
+- Entran **14 por hoja A4** (2 columnas × 7 filas), pegadas entre sí.
+
+El selector de formato quedó con la medida de góndola por defecto (90 × 40) más
+98 × 47, 65 × 35 y 45 × 30 mm por si alguna vez hace falta otra.
+
+También se agregó la lectura del **código de barras (EAN)** del Excel: se busca por el
+nombre del encabezado (algo con *barra*, *EAN* o *GTIN*), y si el Excel no lo trae pero
+el código de Chess es un EAN-13 válido, se usa ese.
+
+La skill de Cowork (`generar_etiquetas.py`) genera exactamente el mismo diseño.
+
+---
+
 ## 2026-09-03 · Usuarios con permisos
 
 El sistema ahora pide usuario y contraseña cuando corre en la red. Vienen dos creados:
