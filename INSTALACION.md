@@ -139,8 +139,60 @@ nada se pierde: al volver, sigue todo.
 
 ---
 
+## Usuarios y permisos
+
+El sistema pide usuario y contraseña. La primera vez que arranca el servidor se crean
+dos usuarios, y las contraseñas de fábrica quedan a la vista en la pantalla:
+
+| Usuario | Contraseña de fábrica | Puede |
+|---------|----------------------|-------|
+| `nico` | `tumalac` | **Todo**: cargar listas, guardarlas, borrarlas, ver cambios de precio, respaldar, imprimir |
+| `invitado` | `invitado` | **Solo etiquetas**: elegir productos, cambiar el formato e imprimir |
+
+**Cambiá las dos contraseñas apenas lo instales:**
+
+```
+npm run clave nico
+npm run clave invitado
+```
+
+Las pide en pantalla (no se ven mientras se escriben) y quedan guardadas cifradas: en el
+archivo no queda la contraseña, solo un resumen del que no se puede volver atrás.
+
+### Qué NO puede el invitado
+
+- Cargar un Excel nuevo al sistema.
+- Guardar, borrar o restaurar listas de precios.
+- Entrar a la pantalla de cambios de precio.
+- Descargar la copia de seguridad.
+
+Sí puede imprimir cualquier etiqueta, elegir marcas y productos, y cambiar el formato.
+En sus etiquetas también sale el precio anterior tachado cuando un producto bajó.
+
+Esto **no es solo esconder botones**: el servidor rechaza esas operaciones aunque alguien
+las intente por afuera del sistema.
+
+### Otros usuarios
+
+```
+npm run usuarios                              ver quién hay y qué puede cada uno
+npm run usuarios -- nuevo deposito invitado   crear un usuario que solo imprime
+npm run usuarios -- nuevo pablo admin         crear otro administrador
+npm run usuarios -- borrar deposito           borrar un usuario
+```
+
+Si querés que los invitados también vean la pantalla de cambios de precio, agregá
+`'ver_cambios'` a la lista del rol `invitado` en `scripts/lib-usuarios.js` y reiniciá
+el servidor.
+
 ## Seguridad
 
-Dentro de la red interna, cualquiera que sepa la dirección puede entrar: no pide usuario
-ni contraseña. Para una herramienta interna suele estar bien. El sistema **no queda
-publicado en internet** — solo se ve desde la red de la distribuidora.
+- El sistema **no queda publicado en internet**: solo se ve desde la red de la
+  distribuidora.
+- Las contraseñas se guardan cifradas, nunca en texto.
+- Tras varios intentos fallidos seguidos desde la misma computadora, hay que esperar
+  unos minutos.
+- La sesión queda abierta 30 días en esa computadora. Con el botón **Salir** se cierra.
+- Como la conexión es `http://` dentro de la red interna (no `https://`), la contraseña
+  viaja sin cifrar por la red de la distribuidora. Para una red propia es lo habitual;
+  tenelo en cuenta si algún día se abre a internet.

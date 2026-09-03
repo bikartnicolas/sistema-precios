@@ -16,6 +16,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const U = require('./lib-usuarios');
 
 const PUERTO = Number(process.env.PORT) || 8080;
 const RAIZ_WEB = path.resolve(__dirname, '../web');
@@ -104,6 +105,59 @@ function evolucionProducto(codigo) {
 }
 
 // --------------------------------------------------------------------------
+// Usuarios y sesiones
+// --------------------------------------------------------------------------
+const arranque = U.iniciarUsuarios();
+let USUARIOS = arranque.usuarios;
+const SESIONES = U.leerSesiones();
+
+// Si se cambia una contraseña o se agrega un usuario con "npm run clave" mientras el
+// servidor está andando, el cambio tiene que valer al toque, sin reiniciar nada.
+let selloUsuarios = 0;
+function refrescarUsuarios() {
+  try {
+    const sello = fs.statSync(U.ARCH_USUARIOS).mtimeMs;
+    if (sello === selloUsuarios) return;
+    const nuevos = U.leerUsuarios();
+    if (nuevos) {
+      USUARIOS = nuevos;
+      if (selloUsuarios) console.log('Cambió usuarios.json: usuarios recargados');
+    }
+    selloUsuarios = sello;
+  } catch (e) { /* si no se puede leer, se sigue con los que ya estaban */ }
+}
+refrescarUsuarios();
+
+// Freno simple contra el que prueba contraseñas a mano: tras varios errores
+// seguidos desde la misma IP, hay que esperar.
+const fallos = new Map();
+const MAX_FALLOS = 8, ESPERA_MS = 5 * 60 * 1000;
+
+function bloqueado(ip) {
+  const f = fallos.get(ip);
+  if (!f) return false;
+  if (Date.now() - f.desde > ESPERA_MS) { fallos.delete(ip); return false; }
+  return f.n >= MAX_FALLOS;
+}
+function sumarFallo(ip) {
+  const f = fallos.get(ip);
+  if (!f || Date.now() - f.desde > ESPERA_MS) fallos.set(ip, { n: 1, desde: Date.now() });
+  else f.n++;
+}
+
+function leerCookie(req, nombre) {
+  const crudo = req.headers.cookie || '';
+  for (const parte of crudo.split(';')) {
+    const [k, ...v] = parte.trim().split('=');
+    if (k === nombre) return decodeURIComponent(v.join('='));
+  }
+  return null;
+}
+
+const quienEs = req => U.usuarioDeToken(SESIONES, USUARIOS, leerCookie(req, 'sesion'));
+const puede = (usuario, permiso) => !!usuario && U.permisosDe(usuario.rol).includes(permiso);
+
+// --------------------------------------------------------------------------
 // HTTP
 // --------------------------------------------------------------------------
 function json(res, codigo, obj) {
@@ -158,16 +212,60 @@ const servidor = http.createServer(async (req, res) => {
   const ruta = url.pathname;
 
   try {
+    refrescarUsuarios();
+    const yo = quienEs(req);
+    const ip = req.socket.remoteAddress || 'desconocida';
+
+    // ---------------- Sesión ----------------
+    if (ruta === '/api/sesion' && req.method === 'GET') {
+      return json(res, 200, yo ? { entro: true, ...U.usuarioPublico(yo) } : { entro: false });
+    }
+
+    if (ruta === '/api/login' && req.method === 'POST') {
+      if (bloqueado(ip)) {
+        return json(res, 429, { error: 'Demasiados intentos. Esperá unos minutos y probá de nuevo.' });
+      }
+      const { usuario, clave } = await leerCuerpo(req);
+      const u = U.buscarUsuario(USUARIOS, usuario);
+      if (!u || !U.claveCorrecta(u, clave || '')) {
+        sumarFallo(ip);
+        console.log(`Intento fallido de "${usuario}" desde ${ip}`);
+        return json(res, 401, { error: 'Usuario o contraseña incorrectos' });
+      }
+      fallos.delete(ip);
+      const token = U.crearSesion(SESIONES, u);
+      res.setHeader('Set-Cookie',
+        `sesion=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${U.DIAS_SESION * 86400}`);
+      console.log(`Entró ${u.usuario} (${u.rol}) desde ${ip}`);
+      return json(res, 200, { entro: true, ...U.usuarioPublico(u) });
+    }
+
+    if (ruta === '/api/salir' && req.method === 'POST') {
+      U.cerrarSesion(SESIONES, leerCookie(req, 'sesion'));
+      res.setHeader('Set-Cookie', 'sesion=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
+      return json(res, 200, { entro: false });
+    }
+
+    // De acá para abajo hay que haber entrado
+    if (ruta.startsWith('/api/') && !yo) {
+      return json(res, 401, { error: 'Entrá con tu usuario' });
+    }
+
+    const sinPermiso = p => json(res, 403,
+      { error: 'Tu usuario no tiene permiso para esto. Pedíselo a Nico.' , permiso: p });
+
     // ---------------- API ----------------
     if (ruta === '/api/info') {
       return json(res, 200, { modo: 'servidor', carpeta: DIR_LISTAS, listas: listarMetas().length });
     }
 
     if (ruta === '/api/listas' && req.method === 'GET') {
+      if (!puede(yo, 'ver_listas')) return sinPermiso('ver_listas');
       return json(res, 200, listarMetas());
     }
 
     if (ruta === '/api/listas' && req.method === 'POST') {
+      if (!puede(yo, 'guardar_lista')) return sinPermiso('guardar_lista');
       const cuerpo = await leerCuerpo(req);
       if (!Array.isArray(cuerpo.items) || !cuerpo.items.length) {
         return json(res, 400, { error: 'La lista no tiene productos' });
@@ -179,7 +277,7 @@ const servidor = http.createServer(async (req, res) => {
         items: cuerpo.items,
       };
       escribirLista(lista);
-      console.log(`Lista guardada: ${lista.id} (${lista.items.length} productos, ${lista.origen})`);
+      console.log(`Lista guardada por ${yo.usuario}: ${lista.id} (${lista.items.length} productos, ${lista.origen})`);
       return json(res, 200, resumen(lista));
     }
 
@@ -188,24 +286,33 @@ const servidor = http.createServer(async (req, res) => {
       const id = decodeURIComponent(mLista[1]);
       if (!idValido(id)) return json(res, 400, { error: 'Identificador inválido' });
       if (req.method === 'GET') {
+        if (!puede(yo, 'ver_listas')) return sinPermiso('ver_listas');
         if (!fs.existsSync(rutaLista(id))) return json(res, 404, { error: 'No existe esa lista' });
         return json(res, 200, leerLista(id));
       }
       if (req.method === 'DELETE') {
+        if (!puede(yo, 'borrar_lista')) return sinPermiso('borrar_lista');
         borrarLista(id);
-        console.log('Lista borrada:', id);
+        console.log(`Lista borrada por ${yo.usuario}:`, id);
         return json(res, 200, { ok: true });
       }
     }
 
     const mProd = ruta.match(/^\/api\/producto\/([^/]+)$/);
     if (mProd && req.method === 'GET') {
+      if (!puede(yo, 'ver_listas')) return sinPermiso('ver_listas');
       return json(res, 200, evolucionProducto(decodeURIComponent(mProd[1])));
     }
 
     if (ruta.startsWith('/api/')) return json(res, 404, { error: 'Ruta desconocida' });
 
     // ---------------- Web ----------------
+    // datos.js tiene la lista de precios: no se entrega sin haber entrado.
+    // El resto (pantalla, logo, librerías) es público: sin sesión solo se ve el login.
+    if (ruta === '/datos.js' && !yo) {
+      res.writeHead(200, { 'Content-Type': TIPOS['.js'], 'Cache-Control': 'no-store' });
+      return res.end('// Entrá con tu usuario para ver la lista de precios.\n');
+    }
     return servirEstatico(req, res, ruta === '/' ? '/index.html' : ruta);
 
   } catch (e) {
@@ -233,6 +340,20 @@ servidor.listen(PUERTO, () => {
   console.log('');
   console.log('  Listas guardadas en:   ' + DIR_LISTAS);
   console.log('  Respaldá esa carpeta (por ejemplo, sincronizándola con Drive).');
+  console.log('');
+  console.log('  Usuarios: ' + USUARIOS.map(u => `${u.usuario} (${u.rol})`).join(', '));
+
+  if (arranque.nuevos) {
+    console.log('');
+    console.log('  ' + '!'.repeat(52));
+    console.log('  PRIMERA VEZ: se crearon los usuarios con contraseñas de fábrica');
+    console.log('');
+    console.log('      nico      / tumalac     (administrador: puede todo)');
+    console.log('      invitado  / invitado    (solo imprimir etiquetas)');
+    console.log('');
+    console.log('  CAMBIALAS AHORA con:   npm run clave nico');
+    console.log('  ' + '!'.repeat(52));
+  }
   console.log('');
   console.log('  Para apagarlo: Ctrl + C');
   console.log('');

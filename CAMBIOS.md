@@ -5,6 +5,41 @@ Lo más nuevo va arriba.
 
 ---
 
+## 2026-09-03 · Usuarios con permisos
+
+El sistema ahora pide usuario y contraseña cuando corre en la red. Vienen dos creados:
+
+| Usuario | Rol | Puede |
+|---------|-----|-------|
+| `nico` | Administrador | Todo: cargar, guardar, borrar y respaldar listas, ver cambios de precio, imprimir |
+| `invitado` | Invitado | Solo etiquetas: elegir productos, cambiar formato e imprimir |
+
+**El invitado no puede tocar las listas de precios**: no puede cargar un Excel nuevo,
+guardar, borrar ni restaurar listas, ni entrar a la pantalla de cambios de precio, ni
+descargar la copia de seguridad. Sí puede imprimir cualquier etiqueta y cambiarle el
+formato, y sus etiquetas también muestran el precio anterior tachado en las bajas.
+
+**Los permisos los hace cumplir el servidor**, no la pantalla: aunque alguien intente la
+operación por afuera del sistema, el servidor la rechaza con un 403. Esconder los botones
+es solo para que la pantalla no ofrezca cosas que van a fallar.
+
+**Detalles**
+
+- Las contraseñas se guardan cifradas (scrypt con sal por usuario), nunca en texto.
+- Tras varios intentos fallidos seguidos desde la misma computadora, hay que esperar.
+- La sesión dura 30 días y sobrevive al reinicio del servidor; el botón **Salir** la cierra.
+- `datos.js` (que tiene la lista de precios) no se entrega sin haber entrado.
+- La barra de arriba muestra quién está usando el sistema y con qué rol.
+- Comandos: `npm run usuarios` (ver), `npm run clave <usuario>` (cambiar contraseña),
+  `npm run usuarios -- nuevo <nombre> <rol>` y `-- borrar <nombre>`.
+- Cambiar una contraseña tiene efecto al instante: el servidor relee el archivo de
+  usuarios sin necesidad de reiniciarlo, y cierra las sesiones abiertas de ese usuario.
+- No se puede borrar al único administrador.
+- Abierto como archivo suelto no hay usuarios: es una copia personal en una sola
+  computadora, sin servidor que pueda hacer cumplir nada.
+
+---
+
 ## 2026-09-03 · Servidor en la red interna y listas guardadas en archivos
 
 El sistema puede seguir usándose como archivo suelto, pero ahora también puede correr

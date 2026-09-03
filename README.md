@@ -24,6 +24,21 @@ el mismo historial**. Guía paso a paso en **[INSTALACION.md](INSTALACION.md)**.
 
 El sistema se da cuenta solo de cómo lo abriste y te lo dice en la pantalla de inicio.
 
+## Usuarios
+
+En modo red, el sistema pide usuario y contraseña. Vienen dos creados:
+
+| Usuario | Rol | Puede |
+|---------|-----|-------|
+| `nico` | Administrador | Todo: cargar, guardar, borrar y respaldar listas, ver cambios de precio, imprimir |
+| `invitado` | Invitado | Solo etiquetas: elegir productos, cambiar el formato e imprimir |
+
+El invitado **no puede tocar las listas de precios**, y no es solo que no vea los
+botones: el servidor rechaza esas operaciones aunque se las intente por afuera.
+
+Contraseñas de fábrica `tumalac` e `invitado`: cambialas apenas lo instales con
+`npm run clave nico`. Detalle completo en [INSTALACION.md](INSTALACION.md).
+
 ## Columnas del export de Chess
 
 El sistema lee siempre estas posiciones fijas (no los nombres de encabezado):
