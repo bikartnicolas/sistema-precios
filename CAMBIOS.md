@@ -5,6 +5,36 @@ Lo más nuevo va arriba.
 
 ---
 
+## 2026-09-03 · Arreglo: las etiquetas salían con los bordes cortados
+
+Nico mandó una impresión donde el marco de las etiquetas salía incompleto. Eran dos
+problemas juntos, los dos ya arreglados:
+
+1. **El marco no rodeaba las etiquetas.** La hoja de etiquetas medía siempre 196 mm (el
+   ancho útil de una A4) y las columnas iban centradas adentro. Como la línea de la
+   izquierda y la de arriba se dibujan en el borde de esa caja, quedaban a 8 mm de la
+   primera etiqueta: la etiqueta de arriba a la izquierda salía **abierta de dos lados**
+   y las líneas sueltas sobresalían a los costados. Ahora la caja mide exactamente lo que
+   miden las columnas (2 × 90 mm), así que el marco cierra las cuatro etiquetas.
+2. **Al imprimir, las líneas salían en gris** (`#9AA2A2`), no en negro. En una láser el
+   gris sale entrecortado y no se puede usar de guía de corte. Ahora se imprimen en negro
+   pleno, igual que se ven en pantalla.
+
+Verificado midiendo los píxeles de la impresión: las cuatro líneas del marco están, son
+negras (valor 0) y arrancan justo en el borde de la primera etiqueta. El mismo arreglo se
+aplicó al generador de la skill de Cowork, que tenía el mismo problema.
+
+---
+
+## 2026-09-03 · La fecha de impresión, al lado de PRECIO FINAL
+
+Antes la fecha (cuando se activaba) salía a la izquierda, pegada al código de Chess:
+`Cod: 429039 · 3/9/2026`. Ahora va **a la derecha de `PRECIO FINAL`**, en el centro del
+pie: `PRECIO FINAL 3/9/2026`. Probado con código, fecha, logo y código de barras todos
+juntos: entra sin cortarse en la etiqueta de 90 mm.
+
+---
+
 ## 2026-09-03 · La góndola: el sistema sabe qué etiquetas están puestas
 
 El problema que resuelve: la lista de Chess trae miles de artículos y en la góndola hay

@@ -202,7 +202,10 @@ PLANTILLA = """<!doctype html>
   /* Medida fisica fija de la etiqueta de gondola: {ancho} x {alto} mm */
   .grid{{
     display:grid;grid-template-columns:repeat({cols},{ancho}mm);justify-content:center;
-    width:196mm;margin:0 auto;background:#fff;
+    /* El ancho tiene que ser exactamente el de las columnas: el marco de la izquierda y
+       el de arriba se dibujan en el borde de esta caja, y si fuera mas ancha esas dos
+       lineas quedarian separadas de la primera etiqueta y saliendose a los costados. */
+    width:calc({cols} * {ancho}mm + 1.6px);margin:0 auto;background:#fff;
     border-left:1.6px solid #000;border-top:1.6px solid #000;
   }}
   .et{{

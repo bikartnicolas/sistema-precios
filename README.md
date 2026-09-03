@@ -97,7 +97,10 @@ y tres franjas separadas por líneas.
 
 - **Descripción** en MAYÚSCULAS, una sola línea, cortada con `…` si no entra.
 - **Precio** grande y centrado, `$` pegado al número y centavos del mismo tamaño.
-- **Pie en tres partes**: código de Chess, `PRECIO FINAL` y el código de barras.
+- **Pie en tres partes**: código de Chess, `PRECIO FINAL` y el código de barras. Si
+  activás la fecha de impresión, sale pegada a la derecha de `PRECIO FINAL`.
+- **Marco negro completo**: las cuatro líneas de cada etiqueta son la guía de corte, así
+  que se imprimen en negro pleno (nunca gris) y llegan de lado a lado de la hoja.
 
 ### Impresión
 
@@ -119,7 +122,8 @@ y tres franjas separadas por líneas.
   Si alguna descripción no entra completa, el sistema **avisa cuántas se cortaron** con
   `…` y sugiere bajar el tamaño del texto o usar un formato más ancho.
 - En los productos que **bajaron** de precio se imprime el **precio anterior tachado**
-  (se puede desactivar). Opcionalmente también la **fecha** de impresión.
+  (se puede desactivar). Opcionalmente también la **fecha** de impresión, que sale a la
+  derecha de `PRECIO FINAL`.
 - El **logo original de la empresa** está en `web/logo.png` y se usa tal cual, sin
   modificar, en el encabezado, el inicio y cada etiqueta. Si querés cambiarlo, reemplazá
   ese archivo (también acepta `logo.jpg` / `logo.webp`).

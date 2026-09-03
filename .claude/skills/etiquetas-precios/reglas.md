@@ -48,8 +48,11 @@ tres franjas separadas por líneas.
   Si el número es tan largo que no entra, se achica solo.
 - **Pie en tres partes**: `Cod: <código de Chess>` a la izquierda, `PRECIO FINAL` al
   centro, y el **código de barras** a la derecha (como número, igual al modelo; puede
-  dibujarse en barras si se pide).
+  dibujarse en barras si se pide). Si se pide la **fecha de impresión**, va pegada a la
+  derecha de `PRECIO FINAL`.
 - Todo en **negro sobre blanco**, sin logos ni colores: la impresora es láser B/N.
+  El **marco es negro y cierra las cuatro etiquetas**: sirve de línea de corte, así que
+  nunca va en gris ni punteado.
 - Entran **14 etiquetas por hoja A4** (2 columnas × 7 filas), pegadas entre sí para
   cortar de lado a lado con la guillotina.
 

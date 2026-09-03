@@ -457,7 +457,12 @@
      superior: así cada una queda enmarcada y las líneas de corte son continuas. */
   .labels{
     display:grid;grid-template-columns:repeat(var(--cols,2),var(--lw,90mm));gap:0;
-    justify-content:center;width:196mm;margin:0 auto;flex:none;background:#fff;
+    /* El ancho tiene que ser EXACTAMENTE el de las columnas: el marco de la izquierda y
+       el de arriba se dibujan en el borde de esta caja, y si la caja fuera más ancha que
+       las etiquetas (por ejemplo los 196mm de la hoja) esas dos líneas quedarían
+       separadas de la primera etiqueta y sobresaliendo a los costados. */
+    width:calc(var(--cols,2) * var(--lw,90mm) + var(--marco,1.6px));
+    justify-content:center;margin:0 auto;flex:none;background:#fff;
     border-left:var(--marco,1.6px) solid #000;border-top:var(--marco,1.6px) solid #000;
     box-shadow:0 1px 3px rgba(54,52,53,.1), 0 10px 30px rgba(54,52,53,.09);
   }
@@ -537,8 +542,9 @@
     .card{border:none;box-shadow:none;border-radius:0}
     .sheet{padding:0;background:#fff;display:block;overflow:visible}
     *{animation:none!important}
-    .labels{border-color:#9AA2A2;box-shadow:none}   /* mantiene los 196mm de la pantalla */
-    .lbl{border-color:#9AA2A2}
+    /* El marco va en negro, igual que en pantalla: la impresora es láser B/N y una
+       línea gris sale entrecortada y no sirve para cortar. */
+    .labels{box-shadow:none}
     @page{size:A4;margin:7mm}
   }
 </style>
@@ -2239,23 +2245,21 @@ function opcionesEtiqueta(){
 //   ├──────────────────────────────────────┤
 //   │              $765,10                 │  precio grande, centavos del mismo tamaño
 //   ├──────────────────────────────────────┤
-//   │ Cod: 429039   PRECIO FINAL   7798…38 │  código de Chess · texto fijo · código de barras
+//   │ Cod: 429039  PRECIO FINAL 3/9  7798…38 │  código · texto fijo + fecha · código de barras
 //   └──────────────────────────────────────┘
 function labelHtml(p, o){
   const [ent, cent] = partes(p.precio);
 
-  // Izquierda: el código de Chess. Opcionalmente, la fecha de impresión debajo.
-  const izq = [
-    o.cod ? `Cod: ${esc(p.codigo)}` : '',
-    o.fecha ? new Date().toLocaleDateString('es-AR') : '',
-  ].filter(Boolean).join(' · ');
+  // Izquierda: el código de Chess
+  const izq = o.cod ? `Cod: ${esc(p.codigo)}` : '';
 
-  // Centro: el texto fijo, y el logo si se pidió
+  // Centro: el texto fijo, la fecha de impresión a su derecha, y el logo si se pidió
   const logo = logoReal
     ? `<img src="${logoReal}" alt="Tumalac">`
     : `<svg viewBox="0 0 132 132"><use href="#isoBN"/></svg>`;
   const cen = [
     o.final ? 'PRECIO FINAL' : '',
+    o.fecha ? new Date().toLocaleDateString('es-AR') : '',
     o.logo ? `<span class="mk">${logo}</span>` : '',
   ].filter(Boolean).join(' ');
 
