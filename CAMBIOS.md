@@ -5,6 +5,15 @@ Lo más nuevo va arriba.
 
 ---
 
+## 2026-09-03 · Datos de contacto en el pie de página
+
+- Se agregó un pie de página fijo con la dirección (Av. Pellegrini 4900, Olavarría) y
+  el teléfono (2284 740640) de la empresa, visible en todas las pantallas del sistema.
+- **No se imprime**: queda oculto en la hoja de etiquetas, que sigue saliendo solo con
+  lo necesario para la góndola.
+
+---
+
 ## 2026-09-03 · Colores reales del logo y animaciones en toda la interfaz
 
 **Paleta extraída del logo**
