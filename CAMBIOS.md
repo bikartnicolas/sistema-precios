@@ -5,6 +5,34 @@ Lo más nuevo va arriba.
 
 ---
 
+## 2026-09-03 · Colores reales del logo y animaciones en toda la interfaz
+
+**Paleta extraída del logo**
+
+- Se reemplazó la paleta aproximada por los colores exactos del archivo `web/logo.png`
+  (muestreados del PNG real): verde `#57A595` y gris carbón `#363435`. Todos los tonos
+  derivados (fondos suaves, hovers, sombras) se recalcularon a partir de esos dos.
+- Franja fija de 3px arriba de toda la página con los dos colores del logo, como sello
+  de marca constante.
+- El halo de color detrás del logo en el inicio, los avatares de marca, el indicador de
+  pasos y los botones ahora llevan el verde real, no una aproximación.
+
+**Animaciones**
+
+- Entradas escalonadas: tarjetas de marca, KPIs de cambios de precio y las dos opciones
+  del menú aparecen con una leve subida y desvanecido, en cascada.
+- Micro-interacciones: botones con elevación al pasar el mouse, ícono de las tarjetas
+  principales con giro sutil al hover, checkbox de producto con rebote al marcar.
+- Números que reaccionan: el contador de seleccionados (barra flotante y pantalla de
+  confirmación) hace un pequeño "bump" cada vez que cambia.
+- Halo con pulso suave alrededor del logo del inicio y del punto de estado en la barra
+  superior, sin ser invasivo.
+- Todo respeta `prefers-reduced-motion` (se desactiva solo si el usuario lo pidió a
+  nivel sistema) y **ninguna animación ni la franja de color se imprime** — la hoja de
+  etiquetas sigue saliendo 100% en negro para la láser.
+
+---
+
 ## 2026-09-03 · Código de barras real y vista previa a tamaño real
 
 **Código de barras EAN-13**
