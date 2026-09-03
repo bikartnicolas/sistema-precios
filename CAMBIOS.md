@@ -5,6 +5,43 @@ Lo más nuevo va arriba.
 
 ---
 
+## 2026-09-03 · Servidor en la red interna y listas guardadas en archivos
+
+El sistema puede seguir usándose como archivo suelto, pero ahora también puede correr
+como servidor en una PC de la distribuidora. Eso resuelve dos cosas de una:
+
+**Los datos ya no dependen del navegador**
+
+- `scripts/servidor.js` guarda cada lista como un archivo en `datos/listas/`.
+  No se pierden si alguien limpia los datos de navegación, se reinstala Windows o se
+  usa otra computadora.
+- Se respaldan copiando esa carpeta (por ejemplo, sincronizándola con Drive).
+- Desaparece el límite de 8 listas del navegador.
+- El servidor recrea la carpeta si alguien la mueve o borra, en vez de fallar.
+
+**Cualquiera de la distribuidora puede entrar**
+
+- Se entra desde `http://IP-de-esa-PC:8080`, sin instalar nada.
+- Todos ven **el mismo historial**: si uno carga la lista del lunes, el resto ya la tiene.
+- Si otro ya subió la misma lista, la comparación se hace contra la anterior, así no
+  aparece un "sin cambios" engañoso.
+- Al arrancar, el servidor muestra la dirección de red para pasarle al resto.
+
+**Detalles**
+
+- El sistema detecta solo si está como archivo suelto o en el servidor, y lo muestra en
+  la pantalla de inicio.
+- Si el servidor no responde, **avisa en pantalla** en vez de aparentar que no hay
+  historial (que era el riesgo de trabajar creyendo que se guardaba).
+- Para traer el historial de la versión anterior: *Descargar copia* desde el archivo
+  suelto y *Traer una copia* en el servidor. El navegador no comparte lo guardado entre
+  `file://` y `http://`, así que el archivo de copia es el puente.
+- El servidor no usa librerías externas y bloquea el acceso a archivos fuera de `web/`.
+- Guía de instalación paso a paso en `INSTALACION.md`, incluido cómo dejarlo arrancando
+  solo con Windows y cómo respaldar.
+
+---
+
 ## 2026-09-03 · Historial de listas y etiquetas que se ajustan solas
 
 ### Almacenamiento y comparación

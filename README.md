@@ -3,13 +3,26 @@
 Etiquetas de precios unitarios para la góndola de la distribuidora, a partir del
 Excel de precios de Chess ERP.
 
-## Las tres partes
+## Las partes
 
 | Carpeta | Qué es | Dónde corre |
 |---------|--------|-------------|
-| `web/` | La herramienta principal: importa el Excel, filtra, y arma las etiquetas para imprimir | Doble clic en tu compu, no necesita instalar nada |
-| `scripts/` | Descarga sola el Excel desde Chess, sin entrar a mano | Node.js en tu compu |
+| `web/` | La herramienta principal: importa el Excel, filtra, y arma las etiquetas para imprimir | Doble clic en tu compu, o servida en la red |
+| `scripts/servidor.js` | Publica el sistema en la red interna y guarda las listas en archivos | Node.js en una PC de la distribuidora |
+| `scripts/` (resto) | Descarga sola el Excel desde Chess, sin entrar a mano | Node.js en tu compu |
 | `.claude/skills/` + `cowork/` | Lo mismo pero desde Cowork, conversando | Cowork |
+
+## Dos formas de usarlo
+
+**Archivo suelto** — doble clic en `web/index.html`. Funciona en una sola computadora y
+las listas quedan guardadas en ese navegador. Sirve para probar o para uso personal.
+
+**En la red (recomendado)** — una PC corre `npm start` y todos entran desde el navegador
+a `http://IP-de-esa-PC:8080`. Las listas se guardan como archivos en esa PC: no se pierden
+si alguien limpia el navegador, se respaldan copiando una carpeta, y **todo el equipo ve
+el mismo historial**. Guía paso a paso en **[INSTALACION.md](INSTALACION.md)**.
+
+El sistema se da cuenta solo de cómo lo abriste y te lo dice en la pantalla de inicio.
 
 ## Columnas del export de Chess
 
@@ -79,8 +92,14 @@ selección.
 
 ### Historial de listas y comparación de precios
 
-Cada lista que cargás **se guarda sola** en el navegador, hasta 8. En la pantalla de
-inicio ves el historial completo, con fecha, cantidad de productos y de dónde salió.
+Cada lista que cargás **se guarda sola**. En la pantalla de inicio ves el historial
+completo, con fecha, cantidad de productos y de dónde salió.
+
+- **En la red**: las listas son archivos en la carpeta `datos/` de la PC del servidor.
+  No hay límite práctico de cantidad, las ve todo el equipo, y se respaldan copiando
+  esa carpeta (por ejemplo, sincronizándola con Drive).
+- **Archivo suelto**: se guardan en ese navegador, hasta 8, y se pierden si borrás los
+  datos de navegación. Conviene descargar la copia seguido.
 
 - **Comparás contra la lista que quieras**: la semana pasada, el mes pasado, la que sea.
   El selector está arriba de la tabla de cambios.
@@ -88,8 +107,9 @@ inicio ves el historial completo, con fecha, cantidad de productos y de dónde s
   que tuvo ese producto y cuánto varió entre cada uno.
 - **Exportar a Excel**: baja los cambios en un `.csv` listo para abrir en Excel.
 - **Copia de seguridad**: el botón *Descargar copia* baja todo el historial en un
-  archivo; *Restaurar* lo vuelve a cargar en otra compu o navegador. Sin esto, el
-  historial vive solo en ese navegador.
+  archivo; *Restaurar* lo vuelve a cargar en otra compu o navegador. Es también la forma
+  de pasar el historial del archivo suelto al servidor (para el navegador son dos lugares
+  distintos y no los comparte solo).
 
 El circuito de cada semana:
 

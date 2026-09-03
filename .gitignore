@@ -5,3 +5,4 @@ descargas/
 *.log
 .DS_Store
 web/datos.js
+datos/

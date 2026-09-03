@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Tumalac · Etiquetas de precios</title>
+<link rel="icon" href="logo.png">
 
 <!-- Datos que deja el agente al descargar de Chess. Si no existe, se sube el Excel a mano. -->
 <script src="datos.js"></script>
@@ -335,6 +336,20 @@
   .hist-row .del{background:none;border:none;color:var(--ink-4);padding:4px 7px;font-size:12px;border-radius:7px}
   .hist-row .del:hover{color:#B4451F;background:#FCF0EC}
   .hist-tip{color:var(--ink-4);font-size:12px;margin:14px 0 0;line-height:1.5}
+  .migra{
+    display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 14px;
+    background:var(--up-50);border:1px solid #F2DFBE;border-radius:var(--r);
+    color:var(--up);font-size:12.5px;font-weight:600;
+  }
+  .migra svg{flex:none}
+  .migra span{flex:1;line-height:1.45}
+  /* Indicador de dónde se están guardando las listas */
+  .modo{
+    display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;
+    font-size:11.5px;font-weight:700;background:var(--teal-50);color:var(--teal-700);
+    border:1px solid var(--teal-200);
+  }
+  .modo.local{background:#EFF2F2;color:var(--ink-3);border-color:var(--line-2)}
   .muted-note{color:var(--ink-4);font-size:12.5px;margin:12px 0 0}
   .warn-line{
     display:flex;align-items:center;gap:8px;margin:10px 0 0;
@@ -525,6 +540,11 @@
   </div>
 
   <div class="load">
+    <p class="warn-line" id="avisoServidor" style="display:none">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+      <span></span>
+    </p>
+
     <!-- Ya hay una lista en uso -->
     <div class="ready" id="working" style="display:none">
       <span class="ic">
@@ -574,10 +594,15 @@
         <input type="file" id="fileRestore" accept=".json" style="display:none">
       </div>
       <div id="histList"></div>
-      <p class="hist-tip">
-        Se guardan solas al cargar cada lista, hasta 8. Sirven para comparar precios contra
-        cualquier fecha anterior. Descargá una copia si vas a cambiar de computadora.
-      </p>
+
+      <div class="migra" id="migrarBox" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg>
+        <span></span>
+        <button class="b-primary sm" id="btnMigrar">Pasarlas al servidor</button>
+        <button class="b-primary sm" id="btnDesdeCopia" style="display:none">Traer una copia</button>
+      </div>
+
+      <p class="hist-tip" id="histTip"></p>
     </div>
   </div>
 </section>
@@ -851,9 +876,9 @@ document.getElementById('btnSeguirTrabajando').addEventListener('click', ()=>ir(
     ? `Bajada el ${f.toLocaleDateString('es-AR')} a las ${f.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`
     : (d.archivo || '');
   document.getElementById('dropText').textContent = 'O subí otro Excel a mano:';
-  document.getElementById('btnUsarAuto').addEventListener('click', ()=>{
+  document.getElementById('btnUsarAuto').addEventListener('click', async ()=>{
     origen = 'Chess · ' + (f ? f.toLocaleDateString('es-AR') : 'descarga automática');
-    cargarProductos(d.productos);
+    await cargarProductos(d.productos);
   });
 })();
 
@@ -896,10 +921,11 @@ function mostrarMapeo(){
   document.getElementById('mapBox').style.display = 'block';
 }
 
-document.getElementById('btnMap').addEventListener('click', ()=>{
+document.getElementById('btnMap').addEventListener('click', async ()=>{
   const ci = +document.getElementById('mCod').value, di = +document.getElementById('mDesc').value;
   const pi = +document.getElementById('mPre').value, mi = +document.getElementById('mMar').value;
-  cargarProductos(rawRows.map(r=>{
+  document.getElementById('mapBox').style.display = 'none';
+  await cargarProductos(rawRows.map(r=>{
     const descripcion = (r[di] ?? '').toString().trim();
     return {
       codigo: (r[ci] ?? '').toString().trim(),
@@ -908,62 +934,178 @@ document.getElementById('btnMap').addEventListener('click', ()=>{
       marca: (mi >= 0 ? (r[mi] ?? '').toString().trim() : '') || descripcion.split(/\s+/)[0] || 'Sin marca'
     };
   }));
-  document.getElementById('mapBox').style.display = 'none';
 });
 
-// ================= HISTORIAL DE LISTAS =================
-// Cada lista guardada es {id, fecha, origen, items:[[codigo,precio],...]}.
-// Se guardan en el navegador, de la más nueva a la más vieja, hasta MAX_LISTAS.
+// ================= ALMACENAMIENTO DE LISTAS =================
+// Funciona de dos maneras, según cómo se abra el sistema:
+//
+//   SERVIDOR  (http://...)  las listas viven en archivos en la PC que corre el
+//                           servidor. Las ve todo el que entre desde la red interna
+//                           y se respaldan copiando la carpeta datos/.
+//   NAVEGADOR (file://...)  las listas viven en este navegador (localStorage), como
+//                           antes. Sirve para una sola computadora.
+//
+// Cada lista es {id, fecha, origen, items:[[codigo,precio],...]}.
+// El historial en memoria guarda solo el resumen {id, fecha, origen, n};
+// los precios de una lista se piden únicamente cuando hacen falta.
 
-function leerHistorial(){
-  try{
-    const h = JSON.parse(localStorage.getItem(KEY_HIST));
-    if(h && Array.isArray(h.listas)) return h.listas;
-  }catch(e){}
-  // Migración del formato viejo: la única "lista base" pasa a ser la primera del historial
-  try{
-    const v = JSON.parse(localStorage.getItem(KEY_BASE));
-    if(v && Array.isArray(v.items) && v.items.length){
-      const migrada = [{
-        id: 'm' + Date.now(),
-        fecha: v.savedAt || new Date().toISOString(),
-        origen: 'lista base anterior',
-        items: v.items.map(i=>[i.codigo, i.precio])
-      }];
-      escribirHistorial(migrada);
-      return migrada;
-    }
-  }catch(e){}
-  return [];
-}
+const EN_SERVIDOR = location.protocol === 'http:' || location.protocol === 'https:';
 
-function escribirHistorial(listas){
-  const recorte = listas.slice(0, MAX_LISTAS);
-  try{
-    localStorage.setItem(KEY_HIST, JSON.stringify({listas: recorte}));
-    historial = recorte;
-    return true;
-  }catch(e){
-    // Si el navegador se queda sin espacio, va soltando las más viejas hasta que entre
-    if(recorte.length > 1) return escribirHistorial(recorte.slice(0, recorte.length - 1));
-    historial = [];
-    return false;
+const Store = (function(){
+  const resumen = l => ({id:l.id, fecha:l.fecha, origen:l.origen || '', n:l.items.length});
+
+  // ---------- modo navegador (localStorage) ----------
+  function leerLocal(){
+    try{
+      const h = JSON.parse(localStorage.getItem(KEY_HIST));
+      if(h && Array.isArray(h.listas)) return h.listas;
+    }catch(e){}
+    // Migración del formato más viejo, cuando había una sola "lista base"
+    try{
+      const v = JSON.parse(localStorage.getItem(KEY_BASE));
+      if(v && Array.isArray(v.items) && v.items.length){
+        const migrada = [{
+          id: 'm' + Date.now(),
+          fecha: v.savedAt || new Date().toISOString(),
+          origen: 'lista base anterior',
+          items: v.items.map(i=>[i.codigo, i.precio])
+        }];
+        escribirLocal(migrada);
+        return migrada;
+      }
+    }catch(e){}
+    return [];
   }
+  function escribirLocal(listas){
+    const recorte = listas.slice(0, MAX_LISTAS);
+    try{
+      localStorage.setItem(KEY_HIST, JSON.stringify({listas: recorte}));
+      return true;
+    }catch(e){
+      // Sin espacio en el navegador: va soltando las más viejas hasta que entre
+      if(recorte.length > 1) return escribirLocal(recorte.slice(0, recorte.length - 1));
+      return false;
+    }
+  }
+
+  // ---------- modo servidor (archivos en la PC) ----------
+  async function api(ruta, opciones){
+    const r = await fetch(ruta, opciones);
+    if(!r.ok){
+      let msg = 'Error ' + r.status;
+      try{ msg = (await r.json()).error || msg; }catch(e){}
+      throw new Error(msg);
+    }
+    return r.json();
+  }
+
+  return {
+    enServidor: EN_SERVIDOR,
+
+    async listar(){
+      if(EN_SERVIDOR) return api('/api/listas');
+      return leerLocal().map(resumen);
+    },
+
+    async items(id){
+      if(EN_SERVIDOR) return new Map((await api('/api/listas/' + encodeURIComponent(id))).items);
+      const l = leerLocal().find(x=>x.id === id);
+      return new Map(l ? l.items : []);
+    },
+
+    async guardar(lista){
+      if(EN_SERVIDOR){
+        return api('/api/listas', {
+          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(lista)
+        });
+      }
+      const completa = Object.assign({id:'l' + Date.now()}, lista);
+      if(!escribirLocal([completa, ...leerLocal()]))
+        throw new Error('El navegador no tiene espacio. Borrá alguna lista vieja del historial.');
+      return resumen(completa);
+    },
+
+    async borrar(id){
+      if(EN_SERVIDOR) return api('/api/listas/' + encodeURIComponent(id), {method:'DELETE'});
+      escribirLocal(leerLocal().filter(x=>x.id !== id));
+    },
+
+    // Precios que tuvo un producto, de la lista más vieja a la más nueva
+    async evolucion(codigo){
+      if(EN_SERVIDOR) return api('/api/producto/' + encodeURIComponent(codigo));
+      return leerLocal().slice().reverse()
+        .map(l=>{ const it = l.items.find(i=>i[0] === codigo); return it ? {fecha:l.fecha, precio:it[1]} : null; })
+        .filter(Boolean);
+    },
+
+    // Para la copia de seguridad: todas las listas completas
+    async exportarTodo(){
+      if(!EN_SERVIDOR) return leerLocal();
+      const metas = await api('/api/listas');
+      const todas = [];
+      for(const m of metas) todas.push(await api('/api/listas/' + encodeURIComponent(m.id)));
+      return todas;
+    },
+
+    // Restaurar una copia: agrega las que faltan, sin pisar las que ya están
+    async importar(listas){
+      const existentes = new Set((await this.listar()).map(l=>l.id));
+      let sumadas = 0;
+      if(EN_SERVIDOR){
+        for(const l of listas){
+          if(existentes.has(l.id)) continue;
+          await api('/api/listas', {
+            method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(l)
+          });
+          sumadas++;
+        }
+      }else{
+        const mezcla = [...listas.filter(l=>!existentes.has(l.id)), ...leerLocal()]
+          .sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
+        sumadas = mezcla.length - leerLocal().length;
+        escribirLocal(mezcla);
+      }
+      return sumadas;
+    },
+
+    // Solo en modo servidor: listas que quedaron guardadas en este navegador
+    localesPendientes(){ return EN_SERVIDOR ? leerLocal() : []; },
+    limpiarLocal(){ localStorage.removeItem(KEY_HIST); localStorage.removeItem(KEY_BASE); },
+  };
+})();
+
+// Si el servidor no responde, hay que avisarlo: si no, parece que no hay historial
+// y se corre el riesgo de trabajar creyendo que se está guardando cuando no.
+function avisoServidor(mensaje){
+  const el = document.getElementById('avisoServidor');
+  if(!el) return;
+  el.style.display = mensaje ? 'flex' : 'none';
+  if(mensaje) el.querySelector('span').textContent =
+    'No se puede hablar con el servidor (' + mensaje + '). ' +
+    'Revisá que esté encendido en la PC de administración: hasta que vuelva, ' +
+    'las listas no se guardan ni se comparan.';
 }
 
-const huella = items => items.length + '|' + Math.round(items.reduce((s,i)=>s + i[1], 0) * 100);
+// ¿La lista ya guardada tiene exactamente los mismos productos y precios que estos items?
+async function mismaLista(meta, items){
+  if(!meta || meta.n !== items.length) return false;
+  try{
+    const previos = await Store.items(meta.id);
+    return items.every(([c,p]) => Math.round((previos.get(c) ?? NaN) * 100) === Math.round(p * 100));
+  }catch(e){ return false; }
+}
 
-function guardarListaActual(motivo){
+async function guardarListaActual(motivo){
   if(!productos.length) return null;
   const items = productos.map(p=>[p.codigo, p.precio]);
   // No duplica: si la última guardada es idéntica, no agrega otra
-  if(historial.length && huella(historial[0].items) === huella(items)) return historial[0];
-  const lista = { id: 'l' + Date.now(), fecha: new Date().toISOString(), origen: motivo || origen, items };
-  if(!escribirHistorial([lista, ...historial])){
-    alert('No se pudo guardar la lista: el navegador no tiene espacio. Borrá alguna lista vieja del historial.');
+  if(historial.length && await mismaLista(historial[0], items)) return historial[0];
+  try{
+    return await Store.guardar({fecha:new Date().toISOString(), origen: motivo || origen, items});
+  }catch(e){
+    alert('No se pudo guardar la lista: ' + e.message);
     return null;
   }
-  return lista;
 }
 
 function fechaCorta(iso){
@@ -971,44 +1113,115 @@ function fechaCorta(iso){
   return d.toLocaleDateString('es-AR') + ' ' + d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
 }
 
-function renderHistorial(){
-  historial = leerHistorial();
+async function renderHistorial(){
+  try{ historial = await Store.listar(); avisoServidor(null); }
+  catch(e){ historial = []; avisoServidor(e.message); }
+
   const box = document.getElementById('histBox');
-  if(!historial.length){ box.style.display = 'none'; return; }
+  const pendientes = Store.localesPendientes();
+  // Con servidor el panel se muestra siempre: aunque esté vacío, sirve para saber
+  // dónde se guardan las listas y para traer una copia de la versión anterior.
+  if(!historial.length && !pendientes.length && !Store.enServidor){
+    box.style.display = 'none';
+    return;
+  }
   box.style.display = 'block';
-  document.getElementById('histCount').textContent =
-    `${historial.length} de ${MAX_LISTAS}`;
+
+  document.getElementById('histCount').textContent = Store.enServidor
+    ? `${historial.length} en el servidor`
+    : `${historial.length} de ${MAX_LISTAS} en este navegador`;
+
   document.getElementById('histList').innerHTML = historial.map((l,i)=>`
     <div class="hist-row ${i===0?'first':''}">
       <span class="dot"></span>
       <span class="fch">${fechaCorta(l.fecha)}</span>
-      <span class="det">${l.items.length} productos · ${esc(l.origen || 'sin origen')}</span>
+      <span class="det">${l.n} productos · ${esc(l.origen || 'sin origen')}</span>
       <button class="del" data-del-lista="${l.id}" title="Borrar esta lista">Borrar</button>
-    </div>`).join('');
+    </div>`).join('') || '<div class="hist-row"><span class="det">Todavía no hay listas guardadas.</span></div>';
 
-  document.querySelectorAll('[data-del-lista]').forEach(b=>b.addEventListener('click', ()=>{
+  document.querySelectorAll('[data-del-lista]').forEach(b=>b.addEventListener('click', async ()=>{
     const l = historial.find(x=>x.id === b.dataset.delLista);
     if(!l || !confirm(`¿Borrar la lista del ${fechaCorta(l.fecha)}?`)) return;
-    escribirHistorial(historial.filter(x=>x.id !== l.id));
+    await Store.borrar(l.id);
     if(baseId === l.id) baseId = null;
-    renderHistorial();
-    if(productos.length){ comparar(); renderCambios(); }
+    await renderHistorial();
+    if(productos.length){ await comparar(); renderCambios(); }
   }));
+
+  document.getElementById('histTip').innerHTML = Store.enServidor
+    ? `<span class="modo">● En el servidor</span> &nbsp; Las listas se guardan como archivos en la PC
+       del servidor: las ve todo el que entre desde la red y se respaldan copiando la carpeta
+       <code>datos</code>. La copia en <em>.json</em> es un respaldo extra.`
+    : `<span class="modo local">● Solo en esta computadora</span> &nbsp; Las listas se guardan en este
+       navegador (hasta ${MAX_LISTAS}) y se pierden si borrás los datos de navegación.
+       Descargá una copia seguido, o pedile a Nico que levante el servidor para compartirlas.`;
+
+  // Traer al servidor lo que haya quedado guardado antes.
+  // Ojo: el navegador NO comparte lo guardado entre el archivo suelto (file://) y el
+  // servidor (http://) — son dos orígenes distintos. Por eso hay dos caminos:
+  //   a) quedaron listas en este mismo origen  -> se pasan con un botón
+  //   b) venías del archivo suelto             -> se pasan con el archivo de copia
+  const migra = document.getElementById('migrarBox');
+  const btnMigrar = document.getElementById('btnMigrar');
+  const btnDesdeCopia = document.getElementById('btnDesdeCopia');
+
+  if(pendientes.length){
+    migra.style.display = 'flex';
+    btnMigrar.style.display = ''; btnDesdeCopia.style.display = 'none';
+    migra.querySelector('span').textContent =
+      `Hay ${pendientes.length} lista${pendientes.length!==1?'s':''} guardada${pendientes.length!==1?'s':''} ` +
+      `solo en este navegador. Pasalas al servidor para que no se pierdan y las vea todo el equipo.`;
+  } else if(Store.enServidor && !historial.length){
+    migra.style.display = 'flex';
+    btnMigrar.style.display = 'none'; btnDesdeCopia.style.display = '';
+    migra.querySelector('span').innerHTML =
+      '¿Venías usando el sistema como archivo suelto? Abrilo como antes, tocá ' +
+      '<strong>Descargar copia</strong>, y traé acá ese archivo para no empezar de cero.';
+  } else {
+    migra.style.display = 'none';
+  }
 }
 
+// Sube al servidor las listas que habían quedado guardadas en este navegador
+document.getElementById('btnMigrar').addEventListener('click', async ()=>{
+  const pendientes = Store.localesPendientes();
+  if(!pendientes.length) return;
+  const btn = document.getElementById('btnMigrar');
+  btn.disabled = true; btn.textContent = 'Pasando…';
+  try{
+    const sumadas = await Store.importar(pendientes);
+    Store.limpiarLocal();
+    await renderHistorial();
+    if(productos.length){ await comparar(); renderCambios(); }
+    alert(`Listo: ${sumadas} lista${sumadas!==1?'s':''} pasada${sumadas!==1?'s':''} al servidor. ` +
+          `Ahora las ve cualquiera que entre desde la red.`);
+  }catch(e){
+    alert('No se pudieron pasar: ' + e.message);
+  }finally{
+    btn.disabled = false; btn.textContent = 'Pasarlas al servidor';
+  }
+});
+
 // ---------- Carga + comparación ----------
-function cargarProductos(lista){
+async function cargarProductos(lista){
   productos = lista
     .map(p=>({ codigo:String(p.codigo||'').trim(), descripcion:String(p.descripcion||'').trim(),
                marca:String(p.marca||'Sin marca').trim(), precio:Number(p.precio)||0 }))
     .filter(p => p.codigo && p.descripcion && p.precio > 0);   // los de $0 nunca van a góndola
 
   seleccion.clear();
-  historial = leerHistorial();
-  baseId = historial.length ? historial[0].id : null;   // compara contra la última guardada
-  comparar();
-  guardarListaActual(origen);                            // y recién ahí guarda la de hoy
-  renderHistorial();
+  try{ historial = await Store.listar(); avisoServidor(null); }
+  catch(e){ historial = []; avisoServidor(e.message); }
+
+  // Si la última lista guardada ES esta misma (por ejemplo, ya la cargó otro desde otra
+  // computadora), comparar contra ella no diría nada: se compara contra la anterior.
+  const items = productos.map(p=>[p.codigo, p.precio]);
+  const yaEstaba = historial.length ? await mismaLista(historial[0], items) : false;
+  baseId = (yaEstaba ? historial[1]?.id : historial[0]?.id) ?? null;
+
+  await comparar();
+  if(!yaEstaba) await guardarListaActual(origen);       // y recién ahí guarda la de hoy
+  await renderHistorial();
 
   const chip = document.getElementById('chip');
   chip.style.display = 'inline-flex';
@@ -1018,7 +1231,7 @@ function cargarProductos(lista){
   ir('menu');
 }
 
-function comparar(){
+async function comparar(){
   const tag = document.getElementById('tagCambios');
   const base = historial.find(l => l.id === baseId);
 
@@ -1028,7 +1241,13 @@ function comparar(){
     window.__cmp = null;
     return;
   }
-  const m = new Map(base.items);
+  let m;
+  try{ m = await Store.items(base.id); }
+  catch(e){
+    tag.className = 'note mute'; tag.textContent = 'No se pudo leer la lista anterior';
+    window.__cmp = null;
+    return;
+  }
   let ch = 0, nu = 0;
   for(const p of productos){
     if(!m.has(p.codigo)){ p.estado='nuevo'; p.precioAnterior=null; nu++; }
@@ -1197,7 +1416,7 @@ document.getElementById('dockGo').addEventListener('click', generar);
 function llenarSelectorBase(){
   const sel = document.getElementById('selBase');
   sel.innerHTML = historial.length
-    ? historial.map(l=>`<option value="${l.id}">${fechaCorta(l.fecha)} · ${l.items.length} prod.</option>`).join('')
+    ? historial.map(l=>`<option value="${l.id}">${fechaCorta(l.fecha)} · ${l.n} prod.</option>`).join('')
     : '<option value="">— no hay listas guardadas —</option>';
   if(baseId) sel.value = baseId;
 }
@@ -1248,19 +1467,18 @@ function renderCambios(){
     tr.addEventListener('click', ()=>verEvolucion(tr.dataset.cod)));
 }
 
-document.getElementById('selBase').addEventListener('change', e=>{
+document.getElementById('selBase').addEventListener('change', async e=>{
   baseId = e.target.value || null;
-  comparar(); renderCambios();
+  await comparar(); renderCambios();
 });
 
 // Evolución del precio de un producto a lo largo de las listas guardadas
-function verEvolucion(codigo){
+async function verEvolucion(codigo){
   const p = productos.find(x=>x.codigo === codigo);
   if(!p) return;
   // De la más vieja a la más nueva, más el precio de la lista que está cargada ahora
-  const puntos = historial.slice().reverse()
-    .map(l=>{ const it = l.items.find(i=>i[0]===codigo); return it ? {fecha:l.fecha, precio:it[1]} : null; })
-    .filter(Boolean);
+  let puntos = [];
+  try{ puntos = await Store.evolucion(codigo); }catch(e){}
   if(!puntos.length || Math.round(puntos[puntos.length-1].precio*100) !== Math.round(p.precio*100)){
     puntos.push({fecha:new Date().toISOString(), precio:p.precio, actual:true});
   } else {
@@ -1299,12 +1517,14 @@ document.getElementById('btnSelCambios').addEventListener('click', ()=>{
   dock(); confirmar();
 });
 
-document.getElementById('btnGuardarBase').addEventListener('click', ()=>{
-  const l = guardarListaActual(origen);
-  renderHistorial();
+document.getElementById('btnGuardarBase').addEventListener('click', async ()=>{
+  const antes = historial.length;
+  const l = await guardarListaActual(origen);
+  await renderHistorial();
   llenarSelectorBase();
-  alert(l ? `Lista guardada (${fechaCorta(l.fecha)}). Queda en el historial para comparar más adelante.`
-          : 'La lista actual ya estaba guardada.');
+  alert(l && historial.length > antes
+    ? `Lista guardada (${fechaCorta(l.fecha)}). Queda en el historial para comparar más adelante.`
+    : 'La lista actual ya estaba guardada.');
 });
 
 // ---------- Exportar los cambios ----------
@@ -1335,30 +1555,39 @@ document.getElementById('btnExportCsv').addEventListener('click', ()=>{
 });
 
 // ---------- Copia de seguridad del historial ----------
-document.getElementById('btnBackup').addEventListener('click', ()=>{
+document.getElementById('btnBackup').addEventListener('click', async ()=>{
   if(!historial.length) return alert('No hay listas guardadas todavía.');
-  const f = new Date().toISOString().slice(0,10);
-  bajarArchivo(`historial-precios-tumalac-${f}.json`,
-    JSON.stringify({version:3, exportado:new Date().toISOString(), listas:historial}, null, 1),
-    'application/json');
+  const btn = document.getElementById('btnBackup');
+  const txt = btn.textContent;
+  btn.textContent = 'Preparando…'; btn.disabled = true;
+  try{
+    const listas = await Store.exportarTodo();
+    const f = new Date().toISOString().slice(0,10);
+    bajarArchivo(`historial-precios-tumalac-${f}.json`,
+      JSON.stringify({version:3, exportado:new Date().toISOString(), listas}, null, 1),
+      'application/json');
+  }catch(e){
+    alert('No se pudo preparar la copia: ' + e.message);
+  }finally{
+    btn.textContent = txt; btn.disabled = false;
+  }
 });
 document.getElementById('btnRestore').addEventListener('click', ()=>document.getElementById('fileRestore').click());
+document.getElementById('btnDesdeCopia').addEventListener('click', ()=>document.getElementById('fileRestore').click());
 document.getElementById('fileRestore').addEventListener('change', async e=>{
   const file = e.target.files[0];
   if(!file) return;
   try{
     const datos = JSON.parse(await file.text());
-    if(!datos || !Array.isArray(datos.listas)) throw new Error('formato');
-    const validas = datos.listas.filter(l => l && l.id && l.fecha && Array.isArray(l.items));
+    const crudas = Array.isArray(datos) ? datos : datos.listas;
+    if(!Array.isArray(crudas)) throw new Error('formato');
+    const validas = crudas.filter(l => l && l.id && l.fecha && Array.isArray(l.items));
     if(!validas.length) throw new Error('vacío');
-    // Junta lo del archivo con lo que ya había, sin repetir, ordenado por fecha
-    const mezcla = [...validas, ...historial]
-      .filter((l,i,arr) => arr.findIndex(x=>x.id === l.id) === i)
-      .sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
-    escribirHistorial(mezcla);
-    renderHistorial();
-    if(productos.length){ comparar(); renderCambios(); }
-    alert(`Historial restaurado: ${validas.length} listas del archivo. Ahora tenés ${historial.length} guardadas.`);
+    const sumadas = await Store.importar(validas);
+    await renderHistorial();
+    if(productos.length){ await comparar(); renderCambios(); }
+    alert(`Historial restaurado: se agregaron ${sumadas} lista${sumadas!==1?'s':''}. ` +
+          `Ahora hay ${historial.length} guardada${historial.length!==1?'s':''}.`);
   }catch(err){
     alert('No pude leer ese archivo. Tiene que ser el .json que genera el botón "Descargar copia".');
   }
@@ -1658,8 +1887,8 @@ estilo();
   })(0);
 })();
 
-renderHistorial();
 ir('inicio');
+renderHistorial();
 </script>
 </body>
 </html>
