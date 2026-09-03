@@ -5,6 +5,45 @@ Lo más nuevo va arriba.
 
 ---
 
+## 2026-09-03 · Historial de listas y etiquetas que se ajustan solas
+
+### Almacenamiento y comparación
+
+- **Historial de hasta 8 listas** en vez de una sola "lista base". Cada lista que se
+  carga se guarda sola, con fecha, cantidad de productos y origen.
+- **Se elige contra qué lista comparar** desde la pantalla de cambios: sirve para ver
+  qué se movió contra la semana pasada, contra el mes pasado, etc.
+- **Evolución del precio por producto**: tocando cualquier fila de la tabla de cambios
+  se abre el detalle con todos los precios que tuvo ese producto y la variación entre
+  cada uno.
+- **Exportar los cambios a Excel** (.csv con separador `;` y coma decimal, listo para
+  abrir en Excel en español).
+- **Copia de seguridad**: se descarga todo el historial en un archivo `.json` y se
+  restaura en otra computadora o navegador. Resuelve el problema de perder el historial
+  al cambiar de máquina o al borrar los datos del navegador.
+- Se puede **borrar una lista** puntual del historial.
+- Nueva tarjeta KPI: **variación promedio** de los precios que cambiaron.
+- Las listas guardadas en el formato viejo se migran solas al historial nuevo.
+
+### Diseño de las etiquetas
+
+- **La hoja en pantalla ahora mide lo mismo que la impresa** (196 mm, el ancho útil de
+  una A4): lo que se ve es exactamente lo que sale por la impresora.
+- **Ajuste automático del texto**: la descripción usa todo el alto disponible y se
+  achica sola lo justo para entrar completa, en vez de cortarse. El precio también se
+  achica si el número es muy largo (millones). Si aun así una descripción no entra, el
+  sistema **lo avisa** en pantalla y sugiere un formato más grande.
+- **Formatos con medidas reales** en un solo selector: Grande (98 × 70 mm), Mediana
+  (65 × 57), Estándar (65 × 47), Chica (49 × 40) y Mínima (49 × 35).
+- **Copias por etiqueta** (1 a 4), para los productos que van en más de un lugar de la
+  góndola.
+- **Precio anterior tachado** en los productos que **bajaron** de precio — se calcula
+  solo con la comparación contra la lista anterior.
+- **Fecha de impresión** opcional en la etiqueta, para saber qué tan vieja es la que
+  está puesta en la góndola.
+
+---
+
 ## 2026-09-03 · Datos de contacto en el pie de página
 
 - Se agregó un pie de página fijo con la dirección (Av. Pellegrini 4900, Olavarría) y

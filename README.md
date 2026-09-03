@@ -45,9 +45,9 @@ Excel (para que funcione sin internet) y los datos que deja el agente.
    - **Elegir productos** — abrís la lista y marcás de a uno.
 4. **¿Seguir agregando?** — después de cada agregado el sistema te pregunta si sumás
    otra marca o pasás a imprimir, y te muestra el total acumulado.
-5. **Etiquetas** — la hoja lista. Elegís columnas y filas por hoja, y el sistema te dice
-   cuántas hojas A4 van a salir antes de imprimir. Con **Vista previa** podés ver una
-   etiqueta a tamaño real antes de imprimir todo el lote.
+5. **Etiquetas** — la hoja lista, mostrada **al tamaño real de una A4**: lo que ves en
+   pantalla es lo que sale impreso. Con **Vista previa** ampliás una etiqueta sola antes
+   de mandar todo el lote.
 
 Tocando el **logo** volvés al inicio desde cualquier pantalla, sin perder la lista ni la
 selección.
@@ -57,8 +57,10 @@ selección.
 - Sale en **A4** y en **negro puro**, pensado para la impresora láser: la etiqueta no
   depende del color para leerse.
 - Las etiquetas **llenan la hoja exacta y van pegadas**, con las líneas de corte
-  continuas de lado a lado, para cortar derecho con la guillotina. Por defecto 3 × 6 =
-  18 etiquetas por hoja, de 65 × 47 mm.
+  continuas de lado a lado, para cortar derecho con la guillotina.
+- **Formatos** (un solo selector, con las medidas reales): Grande 98 × 70 mm, Mediana
+  65 × 57, Estándar 65 × 47 (18 por hoja), Chica 49 × 40 y Mínima 49 × 35.
+- **Copias** de 1 a 4 por producto, para los que van en más de un lugar de la góndola.
 
 ### Reglas automáticas
 
@@ -66,24 +68,34 @@ selección.
   en Chess y una etiqueta en $0 en la góndola es un error de cara al cliente.
 - El código de Chess se imprime como **código de barras real (EAN-13)** cuando es
   válido; si no lo es, se imprime el número tal cual, en texto.
+- **El texto se ajusta solo**: la descripción usa todo el alto disponible y se achica lo
+  justo para entrar completa; el precio se achica si el número es muy largo. Si aun así
+  alguna descripción no entra, el sistema lo avisa y sugiere un formato más grande.
+- En los productos que **bajaron** de precio se imprime el **precio anterior tachado**
+  (se puede desactivar). Opcionalmente también la **fecha** de impresión.
 - El **logo original de la empresa** está en `web/logo.png` y se usa tal cual, sin
   modificar, en el encabezado, el inicio y cada etiqueta. Si querés cambiarlo, reemplazá
   ese archivo (también acepta `logo.jpg` / `logo.webp`).
 
-### Cómo detecta los cambios de precio
+### Historial de listas y comparación de precios
 
-Guarda la última lista importada en el navegador. Al importar la siguiente, compara
-producto por producto por código de Chess y marca **CAMBIÓ** o **NUEVO**.
+Cada lista que cargás **se guarda sola** en el navegador, hasta 8. En la pantalla de
+inicio ves el historial completo, con fecha, cantidad de productos y de dónde salió.
+
+- **Comparás contra la lista que quieras**: la semana pasada, el mes pasado, la que sea.
+  El selector está arriba de la tabla de cambios.
+- **Evolución de un producto**: tocá cualquier fila de la tabla y ves todos los precios
+  que tuvo ese producto y cuánto varió entre cada uno.
+- **Exportar a Excel**: baja los cambios en un `.csv` listo para abrir en Excel.
+- **Copia de seguridad**: el botón *Descargar copia* baja todo el historial en un
+  archivo; *Restaurar* lo vuelve a cargar en otra compu o navegador. Sin esto, el
+  historial vive solo en ese navegador.
 
 El circuito de cada semana:
 
-1. Importás el Excel nuevo.
-2. Vas a *Cambios de precio*, mirás qué se movió.
+1. Cargás el Excel nuevo (queda guardado solo en el historial).
+2. Vas a *Cambios de precio* y mirás qué se movió.
 3. "Seleccionar todos los cambiados" → *Generar etiquetas* → imprimís.
-4. **"Guardar esta lista como base actual"** para que la próxima comparación sea
-   contra los precios de hoy.
-
-Si cambiás de compu o de navegador hay que volver a guardar la lista base una vez.
 
 ---
 
