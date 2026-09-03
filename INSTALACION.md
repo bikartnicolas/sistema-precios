@@ -87,8 +87,9 @@ Desde ahí, cada vez que se prenda la PC, el sistema arranca solo.
 
 ## Respaldo de los datos
 
-Todas las listas viven en la carpeta **`datos`**, al lado de `web` y `scripts`.
-Respaldarlas es copiar esa carpeta.
+Todas las listas viven en la carpeta **`datos`**, al lado de `web` y `scripts`
+(`datos/listas` son las listas de precios y `datos/gondola.json` es el registro de qué
+etiquetas están puestas en el salón). Respaldarlas es copiar esa carpeta.
 
 Lo más simple: poner la carpeta `datos` dentro de la carpeta de Google Drive de la PC,
 o configurar Drive para que sincronice esa carpeta. Con eso el historial queda
@@ -146,8 +147,8 @@ dos usuarios, y las contraseñas de fábrica quedan a la vista en la pantalla:
 
 | Usuario | Contraseña de fábrica | Puede |
 |---------|----------------------|-------|
-| `nico` | `tumalac` | **Todo**: cargar listas, guardarlas, borrarlas, ver cambios de precio, respaldar, imprimir |
-| `invitado` | `invitado` | **Solo etiquetas**: elegir productos, cambiar el formato e imprimir |
+| `nico` | `tumalac` | **Todo**: cargar listas, guardarlas, borrarlas, ver cambios de precio, respaldar, imprimir, góndola |
+| `invitado` | `invitado` | **Etiquetas y góndola**: elegir productos, cambiar el formato, imprimir, y marcar qué cartel se sacó del salón |
 
 **Cambiá las dos contraseñas apenas lo instales:**
 
@@ -168,6 +169,11 @@ archivo no queda la contraseña, solo un resumen del que no se puede volver atr�
 
 Sí puede imprimir cualquier etiqueta, elegir marcas y productos, y cambiar el formato.
 En sus etiquetas también sale el precio anterior tachado cuando un producto bajó.
+
+También puede usar **La góndola**: ver qué carteles están puestos, cuáles quedaron con el
+precio viejo, reimprimirlos y marcar el que sacó del salón. Es a propósito — la góndola se
+llena sola con lo que se imprime, y el que va al salón es el que sabe qué cartel se sacó.
+No es la lista de precios: no puede cambiar ningún precio desde ahí.
 
 Esto **no es solo esconder botones**: el servidor rechaza esas operaciones aunque alguien
 las intente por afuera del sistema.

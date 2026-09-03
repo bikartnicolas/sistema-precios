@@ -30,8 +30,8 @@ En modo red, el sistema pide usuario y contraseña. Vienen dos creados:
 
 | Usuario | Rol | Puede |
 |---------|-----|-------|
-| `nico` | Administrador | Todo: cargar, guardar, borrar y respaldar listas, ver cambios de precio, imprimir |
-| `invitado` | Invitado | Solo etiquetas: elegir productos, cambiar el formato e imprimir |
+| `nico` | Administrador | Todo: cargar, guardar, borrar y respaldar listas, ver cambios de precio, imprimir, góndola |
+| `invitado` | Invitado | Etiquetas y góndola: elegir productos, cambiar el formato, imprimir y marcar qué cartel se sacó |
 
 El invitado **no puede tocar las listas de precios**, y no es solo que no vea los
 botones: el servidor rechaza esas operaciones aunque se las intente por afuera.
@@ -66,7 +66,7 @@ Excel (para que funcione sin internet) y los datos que deja el agente.
 1. **Inicio** — si el agente ya descargó la lista, aparece *"Lista descargada de Chess ·
    N productos"* y seguís con un click. Si no, arrastrás el Excel o lo elegís a mano
    (ahí verificás las columnas E, F, S y AA, que vienen preseleccionadas).
-2. **Dos caminos** — *Imprimir etiquetas* o *Ver cambios de precio*.
+2. **Tres caminos** — *Imprimir etiquetas*, *Ver cambios de precio* o *La góndola*.
 3. **Marcas** — todas las marcas del Excel en cuadros, con cuántos productos tiene cada
    una y cuántos cambiaron de precio. Por marca:
    - **Toda la marca** — la agrega completa de una.
@@ -145,11 +145,35 @@ completo, con fecha, cantidad de productos y de dónde salió.
   de pasar el historial del archivo suelto al servidor (para el navegador son dos lugares
   distintos y no los comparte solo).
 
+### La góndola: qué etiquetas están puestas
+
+La lista de Chess trae miles de artículos y en la góndola hay unos cientos. Para que
+"cambiaron 300 precios" se convierta en "hay que cambiar estos 40 carteles", el sistema
+anota **qué etiquetas están puestas hoy en el salón**.
+
+- **Se llena sola**: cada vez que imprimís, esos productos quedan anotados con el precio
+  que salió en el cartel, la fecha y quién los imprimió. No hay que cargar nada a mano.
+- En la pantalla **La góndola** ves, para cada cartel puesto, **qué precio dice el cartel**
+  contra **qué precio tiene Chess hoy**: esa diferencia es lo que le estás cobrando mal al
+  cliente. Las desactualizadas salen primero, marcadas *CAMBIAR*.
+- **Reimprimir las desactualizadas** las manda todas juntas a la selección. Tocando una
+  fila sola, va solo esa.
+- Cuando saques un cartel del salón, tocá **Quitar** y el sistema deja de pedirte que lo
+  cambies. Si lo volvés a imprimir, se anota de nuevo.
+- La pantalla de *Cambios de precio* arranca filtrada en **lo que está en góndola**
+  (se puede destildar), y las filas de ahí muestran la etiqueta *EN GÓNDOLA*.
+- **Exportar a Excel** baja el estado de toda la góndola en un `.csv`.
+
+En modo red la góndola es un archivo (`datos/gondola.json`) que ve todo el equipo: si uno
+imprime, el resto lo ve. Como archivo suelto queda en ese navegador. Va incluida en la
+copia de seguridad.
+
 El circuito de cada semana:
 
 1. Cargás el Excel nuevo (queda guardado solo en el historial).
-2. Vas a *Cambios de precio* y mirás qué se movió.
+2. Vas a *Cambios de precio* y mirás qué se movió **de lo que está en góndola**.
 3. "Seleccionar todos los cambiados" → *Generar etiquetas* → imprimís.
+4. Cambiás los carteles. Los nuevos ya quedaron anotados solos.
 
 ---
 

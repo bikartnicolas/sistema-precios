@@ -20,7 +20,9 @@ const U = require('./lib-usuarios');
 
 const PUERTO = Number(process.env.PORT) || 8080;
 const RAIZ_WEB = path.resolve(__dirname, '../web');
-const DIR_LISTAS = path.resolve(__dirname, '../datos/listas');
+const DIR_DATOS = path.resolve(__dirname, '../datos');
+const DIR_LISTAS = path.join(DIR_DATOS, 'listas');
+const ARCH_GONDOLA = path.join(DIR_DATOS, 'gondola.json');
 const MAX_CUERPO = 30 * 1024 * 1024;   // 30 MB: una lista de 50.000 productos entra de sobra
 
 fs.mkdirSync(DIR_LISTAS, { recursive: true });
@@ -102,6 +104,73 @@ function evolucionProducto(codigo) {
     } catch (e) { /* lista rota: se ignora */ }
   }
   return puntos.reverse();   // de la más vieja a la más nueva
+}
+
+// --------------------------------------------------------------------------
+// Góndola: qué etiquetas están puestas hoy en el salón.
+//
+// Se llena sola: cada vez que alguien imprime, esos productos quedan anotados
+// con el precio que salió en el cartel y la fecha. Sirve para que la pantalla de
+// cambios de precio muestre primero lo que de verdad hay que ir a cambiar, en vez
+// de los miles de artículos de la lista de Chess que nunca van a la góndola.
+//
+// Es un solo archivo (datos/gondola.json), chico: un renglón por producto.
+// --------------------------------------------------------------------------
+const MAX_GONDOLA = 20000;
+
+function leerGondola() {
+  try {
+    const d = JSON.parse(fs.readFileSync(ARCH_GONDOLA, 'utf8'));
+    return d && d.productos && typeof d.productos === 'object' ? d.productos : {};
+  } catch (e) {
+    return {};   // todavía no existe, o quedó ilegible: se arranca vacía
+  }
+}
+
+function escribirGondola(productos) {
+  asegurarCarpeta();
+  fs.writeFileSync(ARCH_GONDOLA,
+    JSON.stringify({ actualizado: new Date().toISOString(), productos }, null, 1), 'utf8');
+}
+
+const texto = (v, max) => String(v ?? '').trim().slice(0, max);
+
+// Anota (o vuelve a anotar) productos como puestos en la góndola
+function marcarGondola(items, usuario) {
+  const productos = leerGondola();
+  const ahora = new Date().toISOString();
+  let sumados = 0, actualizados = 0;
+  for (const it of items) {
+    const codigo = texto(it && it.codigo, 64);
+    if (!codigo) continue;
+    const precio = Number(it.precio);
+    if (!isFinite(precio) || precio <= 0) continue;
+    if (!productos[codigo] && Object.keys(productos).length >= MAX_GONDOLA) break;
+    productos[codigo] ? actualizados++ : sumados++;
+    productos[codigo] = {
+      codigo,
+      descripcion: texto(it.descripcion, 200),
+      marca: texto(it.marca, 80),
+      precio,                 // el precio que quedó impreso en el cartel
+      // Al imprimir no viene fecha (es ahora). Sí viene cuando se restaura una copia
+      // de seguridad: ahí hay que conservar cuándo se imprimió de verdad.
+      fecha: texto(it.fecha, 40) || ahora,
+      usuario: texto(it.usuario, 40) || texto(usuario, 40),
+    };
+  }
+  if (sumados || actualizados) escribirGondola(productos);
+  return { sumados, actualizados, total: Object.keys(productos).length };
+}
+
+function quitarDeGondola(codigos) {
+  const productos = leerGondola();
+  let quitados = 0;
+  for (const c of codigos) {
+    const codigo = texto(c, 64);
+    if (productos[codigo]) { delete productos[codigo]; quitados++; }
+  }
+  if (quitados) escribirGondola(productos);
+  return { quitados, total: Object.keys(productos).length };
 }
 
 // --------------------------------------------------------------------------
@@ -296,6 +365,31 @@ const servidor = http.createServer(async (req, res) => {
         console.log(`Lista borrada por ${yo.usuario}:`, id);
         return json(res, 200, { ok: true });
       }
+    }
+
+    // ---------------- Góndola ----------------
+    if (ruta === '/api/gondola' && req.method === 'GET') {
+      if (!puede(yo, 'gondola')) return sinPermiso('gondola');
+      const productos = leerGondola();
+      return json(res, 200, Object.values(productos).sort((a, b) => new Date(b.fecha) - new Date(a.fecha)));
+    }
+
+    if (ruta === '/api/gondola' && req.method === 'POST') {
+      if (!puede(yo, 'gondola')) return sinPermiso('gondola');
+      const cuerpo = await leerCuerpo(req);
+      if (!Array.isArray(cuerpo.items)) return json(res, 400, { error: 'Falta la lista de productos' });
+      const r = marcarGondola(cuerpo.items, yo.usuario);
+      console.log(`Góndola por ${yo.usuario}: ${r.sumados} nuevos, ${r.actualizados} actualizados (${r.total} en total)`);
+      return json(res, 200, r);
+    }
+
+    if (ruta === '/api/gondola/quitar' && req.method === 'POST') {
+      if (!puede(yo, 'gondola')) return sinPermiso('gondola');
+      const cuerpo = await leerCuerpo(req);
+      if (!Array.isArray(cuerpo.codigos)) return json(res, 400, { error: 'Faltan los códigos' });
+      const r = quitarDeGondola(cuerpo.codigos);
+      console.log(`Góndola por ${yo.usuario}: ${r.quitados} quitados (${r.total} en total)`);
+      return json(res, 200, r);
     }
 
     const mProd = ruta.match(/^\/api\/producto\/([^/]+)$/);

@@ -28,6 +28,7 @@ const DIAS_SESION = 30;
 // borrar_lista  borrar una lista del historial
 // restaurar     traer un archivo de copia y sumarlo al historial
 // respaldar     descargar la copia de seguridad con todos los precios
+// gondola       ver y editar qué etiquetas están puestas en la góndola
 // usuarios      administrar usuarios (reservado para más adelante)
 // El invitado puede imprimir cualquier etiqueta y cambiarles el formato, pero no toca
 // las listas de precios ni entra a la pantalla de análisis de cambios.
@@ -36,10 +37,13 @@ const DIAS_SESION = 30;
 //
 // Si algún día querés que el invitado vea la pantalla de cambios de precio, agregale
 // 'ver_cambios' a la lista de abajo y reiniciá el servidor.
+//
+// 'gondola' sí lo tiene el invitado: la góndola se llena sola con lo que se imprime,
+// y es quien va al salón el que sabe qué cartel se sacó. No es la lista de precios.
 const PERMISOS_POR_ROL = {
   admin: ['ver_listas','ver_cambios','imprimir','subir_excel','guardar_lista',
-          'borrar_lista','restaurar','respaldar','usuarios'],
-  invitado: ['ver_listas','imprimir'],
+          'borrar_lista','restaurar','respaldar','gondola','usuarios'],
+  invitado: ['ver_listas','imprimir','gondola'],
 };
 
 const permisosDe = rol => PERMISOS_POR_ROL[rol] || PERMISOS_POR_ROL.invitado;

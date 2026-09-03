@@ -5,6 +5,49 @@ Lo más nuevo va arriba.
 
 ---
 
+## 2026-09-03 · La góndola: el sistema sabe qué etiquetas están puestas
+
+El problema que resuelve: la lista de Chess trae miles de artículos y en la góndola hay
+unos cientos. Saber que "cambiaron 300 precios" no dice qué hay que ir a cambiar. Ahora
+el sistema anota **qué etiquetas están puestas hoy en el salón** y con qué precio.
+
+**Se llena sola.** Cada vez que se imprime, esos productos quedan anotados con el precio
+que salió en el cartel, la fecha y quién los imprimió. No hay que cargar nada a mano.
+
+**Pantalla nueva: La góndola** (tercera tarjeta del menú)
+
+- Para cada cartel puesto: **qué precio dice el cartel** contra **qué precio tiene Chess
+  hoy**, y la diferencia en %. Las desactualizadas van primero, marcadas *CAMBIAR*.
+- KPIs arriba: etiquetas puestas, con precio viejo, al día, y las que ya no están en la
+  lista de Chess (productos que se dejaron de vender).
+- **Reimprimir las desactualizadas** manda todas juntas a la selección; tocando una fila
+  sola va solo esa.
+- **Quitar** saca un cartel de la góndola cuando se lo saca del salón: el sistema deja de
+  pedir que se cambie. Si se vuelve a imprimir, se anota de nuevo.
+- Buscador, filtro *solo las que quedaron con precio viejo* y **Exportar a Excel**.
+
+**Cambios en las otras pantallas**
+
+- *Cambios de precio* arranca filtrada en **lo que está en góndola** (se puede destildar),
+  tiene un KPI nuevo *Con cartel puesto*, y las filas muestran la etiqueta *EN GÓNDOLA*.
+  "Seleccionar todos los cambiados" respeta el filtro.
+- En *Marcas* hay un filtro *solo lo que está en góndola*, y cada marca dice cuántos de
+  sus productos tienen cartel puesto.
+- En la lista de productos de una marca, los que están en góndola salen marcados.
+
+**Dónde se guarda**
+
+- En la red: `datos/gondola.json` en la PC del servidor. **Lo ve todo el equipo**: si uno
+  imprime, el resto lo ve al toque.
+- Como archivo suelto: en ese navegador.
+- Va incluida en la **copia de seguridad** (que pasó a versión 4), conservando la fecha
+  y el usuario de cada impresión.
+
+**Permisos**: el invitado **sí** puede usar la góndola. Se llena sola con lo que imprime,
+y el que va al salón es el que sabe qué cartel se sacó. No toca la lista de precios.
+
+---
+
 ## 2026-09-03 · La etiqueta real de góndola (90 × 40 mm)
 
 El sistema ahora imprime la **misma etiqueta que se usa hoy** en la góndola, con las
